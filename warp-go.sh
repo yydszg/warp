@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号和新增功能
-VERSION='1.1.9'
+VERSION='1.2.0'
 
 # 判断 Teams token 最少字符数
 TOKEN_LENGTH=800
@@ -16,8 +16,8 @@ trap "rm -f /tmp/warp-go*; exit" INT
 
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
-E[1]="1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/ ; 2. Scripts to update the warp api."
-C[1]="1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api"
+E[1]="1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own. Website to get a Zero Trust token: https://token.cloudflare.now.cc/"
+C[1]="1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置。获取 Zero Trust token 的网站: https://token.cloudflare.now.cc/"
 E[2]="warp-go h (help)\n warp-go o (temporary warp-go switch)\n warp-go u (uninstall WARP web interface and warp-go)\n warp-go v (sync script to latest version)\n warp-go i (replace IP with Netflix support)\n warp-go 4/6 ( WARP IPv4/IPv6 single-stack)\n warp-go d (WARP dual-stack)\n warp-go n (WARP IPv4 non-global)\n warp-go g (WARP global/non-global switching)\n warp-go e (output wireguard and sing-box configuration file)\n warp-go a (Change to Free, WARP+ or Teams account)"
 C[2]="warp-go h (帮助）\n warp-go o (临时 warp-go 开关)\n warp-go u (卸载 WARP 网络接口和 warp-go)\n warp-go v (同步脚本至最新版本)\n warp-go i (更换支持 Netflix 的IP)\n warp-go 4/6 (WARP IPv4/IPv6 单栈)\n warp-go d (WARP 双栈)\n warp-go n (WARP IPv4 非全局)\n warp-go g (WARP 全局 / 非全局相互切换)\n warp-go e (输出 wireguard 和 sing-box 配置文件)\n warp-go a (更换到 Free，WARP+ 或 Teams 账户)"
 E[3]="This project is designed to add WARP network interface for VPS, using warp-go core, using various interfaces of CloudFlare-WARP, integrated wireguard-go, can completely replace WGCF. Save Hong Kong, Toronto and other VPS, can also get WARP IP. Thanks again @CoiaPrant and his team. Project address: https://gitlab.com/ProjectWARP/warp-go/-/tree/master/"
@@ -102,18 +102,18 @@ E[42]="Please Input WARP+ license:"
 C[42]="请输入WARP+ License:"
 E[43]="License should be 26 characters, please re-enter WARP+ License. Otherwise press Enter to continue. \(\${i} times remaining\): "
 C[43]="License 应为26位字符,请重新输入 WARP+ License \(剩余\${i}次\): "
-E[44]="Please enter the Teams Token (You can easily available at https://web--public--warp-team-api--coia-mfs4.code.run. Or use the one provided by the script if left blank):"
-C[44]="请输入 Teams Token (可通过 https://web--public--warp-team-api--coia-mfs4.code.run 轻松获取，如果留空，则使用脚本提供的):"
+E[44]="Your organization"
+C[44]="组织名:"
 E[45]="Token error, please re-enter Teams token \(remaining \${i} times\):"
 C[45]="Token 错误,请重新输入 Teams token \(剩余\${i}次\):"
 E[46]="Current account type is: \$ACCOUNT_TYPE\\\t \$PLUS_QUOTA\\\n \$CHANGE_TYPE"
 C[46]="当前账户类型是: \$ACCOUNT_TYPE\\\t \$PLUS_QUOTA\\\n \$CHANGE_TYPE"
-E[47]="1. Continue using the free account without changing.\n 2. Change to WARP+ account.\n 3. Change to Teams account. (You can easily available at https://web--public--warp-team-api--coia-mfs4.code.run. Or use the one provided by the script if left blank)\n 0. Return to the main menu."
-C[47]="1. 继续使用 free 账户，不变更\n 2. 变更为 WARP+ 账户\n 3. 变更为 Teams 账户 (可通过 https://web--public--warp-team-api--coia-mfs4.code.run 轻松获取，如果留空，则使用脚本提供的)\n 0. 返回主菜单"
-E[48]="1. Change to free account.\n 2. Change to WARP+ account.\n 3. Change to another WARP Teams account. (You can easily available at https://web--public--warp-team-api--coia-mfs4.code.run. Or use the one provided by the script if left blank)\n 0. Return to the main menu."
-C[48]="1. 变更为 free 账户\n 2. 变更为 WARP+ 账户\n 3. 更换为另一个 Teams 账户 (可通过 https://web--public--warp-team-api--coia-mfs4.code.run 轻松获取，如果留空，则使用脚本提供的)\n 0. 返回主菜单"
-E[49]="1. Change to free account.\n 2. Change to another WARP+ account.\n 3. Change to Teams account. (You can easily available at https://web--public--warp-team-api--coia-mfs4.code.run. Or use the one provided by the script if left blank)\n 0. Return to the main menu."
-C[49]="1. 变更为 free 账户\n 2. 变更为另一个 WARP+ 账户\n 3. 变更为 Teams 账户 (可通过 https://web--public--warp-team-api--coia-mfs4.code.run 轻松获取，如果留空，则使用脚本提供的)\n 0. 返回主菜单"
+E[47]="1. Continue using the free account without changing.\n 2. Change to WARP+ account.\n 3. Change to Teams account. (Enter the organization name and email verification code to get it. Or use the one provided by the script if left blank)\n 0. Return to the main menu."
+C[47]="1. 继续使用 free 账户，不变更\n 2. 变更为 WARP+ 账户\n 3. 变更为 Teams 账户 (输入组织名和邮箱验证码获取，如果留空，则使用脚本提供的)\n 0. 返回主菜单"
+E[48]="1. Change to free account.\n 2. Change to WARP+ account.\n 3. Change to another WARP Teams account. (Enter the organization name and email verification code to get it. Or use the one provided by the script if left blank)\n 0. Return to the main menu."
+C[48]="1. 变更为 free 账户\n 2. 变更为 WARP+ 账户\n 3. 更换为另一个 Teams 账户 (输入组织名和邮箱验证码获取，如果留空，则使用脚本提供的)\n 0. 返回主菜单"
+E[49]="1. Change to free account.\n 2. Change to another WARP+ account.\n 3. Change to Teams account. (Enter the organization name and email verification code to get it. Or use the one provided by the script if left blank)\n 0. Return to the main menu."
+C[49]="1. 变更为 free 账户\n 2. 变更为另一个 WARP+ 账户\n 3. 变更为 Teams 账户 (输入组织名和邮箱验证码获取，如果留空，则使用脚本提供的)\n 0. 返回主菜单"
 E[50]="Registration of WARP\${k} account failed, script aborted. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[50]="注册 WARP\${k} 账户失败，脚本中止，问题反馈: [https://github.com/fscarmen/warp-sh/issues]"
 E[51]="Warp-go not yet installed. No account registered. Script aborted. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -232,6 +232,14 @@ E[107]="All endpoints of WARP cannot be connected. Ask the supplier for more hel
 C[107]="WARP 的所有的 endpoint 均不能连通，有可能 UDP 被限制了，可联系供应商了解如何开启，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[108]="Cannot detect any IPv4 or IPv6. The script is aborted. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[108]="检测不到任何 IPv4 或 IPv6。脚本中止，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
+E[109]="E-mail address to receive the verification code:"
+C[109]="接收验证码的邮箱:"
+E[110]="Verification code:"
+C[110]="验证码:"
+E[111]="Organization does not exist, please re-enter:"
+C[111]="组织名不存在，请重新输入:"
+E[112]="The verification code is wrong, please re-enter:"
+C[112]="验证码错误，请重新输入:"
 
 # 自定义字体彩色，read 函数
 warning() { echo -e "\033[31m\033[01m$*\033[0m"; }  # 红色
@@ -393,6 +401,7 @@ check_dependencies() {
 
 # 获取 warp 账户信息
 warp_api(){
+  local WARP_API_URL="warp.cloudflare.now.cc"
   local RUN=$1
   local FILE_PATH=$2
   local WARP_LICENSE=$3
@@ -400,7 +409,10 @@ warp_api(){
   local WARP_TEAM_TOKEN=$5
   local WARP_CONVERT=$6
   local WARP_CONVERT_MODE=$7
-  local WARP_API_URL="warp.cloudflare.now.cc"
+  local TEAM_AUTH=$8
+  local TEAM_ORGANIZATION=$9
+  local TEAM_EMAIL=${10}
+  local TEAM_CODE=${11}
 
   if [ -s "$FILE_PATH" ]; then
     # Teams 账户文件
@@ -434,7 +446,7 @@ warp_api(){
 
   case "$RUN" in
     register )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=register&team_token=${WARP_TEAM_TOKE}"
+      curl -m5 -sL "https://${WARP_API_URL}/?run=register&team_token=${WARP_TEAM_TOKEN}"
       ;;
     device )
       curl -m5 -sL "https://${WARP_API_URL}/?run=device&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}"
@@ -462,6 +474,17 @@ warp_api(){
           curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT}" | grep -A4 'reserved' | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
         fi
       fi
+      ;;
+    token-step1 )
+      curl -m5 -sL "https://${WARP_API_URL}/?run=token&organization=${TEAM_ORGANIZATION}&email=${TEAM_EMAIL}"
+      ;;
+    token-step2 )
+      local TEAM_ORGANIZATION=$(sed "s/.*organization=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+      local A=$(sed "s/.*A=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+      local S=$(sed "s/.*S=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+      local N=$(sed "s/.*N=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+
+      curl -m5 -sL "https://${WARP_API_URL}/?run=token&organization=${TEAM_ORGANIZATION}&A=${A}&S=${S}&N=${N}&code=${TEAM_CODE}"
       ;;
   esac
 }
@@ -1047,16 +1070,37 @@ update_license() {
   [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME="${NAME:-warp-go}"
 }
 
-# 输入 Teams 账户 token（如有）,如果 TOKEN 以 com.cloudflare.warp 开头，将自动删除多余部分
-input_token() {
-  [ -z "$TOKEN" ] && reading " $(text 44) " TOKEN
-  i=5
-  until [[ -z "$TOKEN" || "${#TOKEN}" -ge "$TOKEN_LENGTH" ]]; do
-    (( i-- )) || true
-    [ "$i" = 0 ] && error "$(text 39)" || reading " $(text_eval 45) " TOKEN
+# 通过组织名和邮箱获取 Teams Token, 如果 Token 以 com.cloudflare.warp 开头，将自动删除多余部分
+get_token() {
+  local ERROR_TIMES=0
+  until grep -sq 'organization=' <<< "$TEAM_AUTH"; do
+    unset TEAM_ORGANIZATION TEAM_AUTH
+    (( ERROR_TIMES++ ))
+    if [[ "$ERROR_TIMES" > 5 ]]; then
+      error "\n $(text 39) \n"
+    else
+      [ "$ERROR_TIMES" = 1 ] && reading "\n $(text 44) " TEAM_ORGANIZATION || reading "\n $(text 111) " TEAM_ORGANIZATION
+      [[ -n "$TEAM_ORGANIZATION" && -z "$TEAM_EMAIL" ]] && reading " $(text 109) " TEAM_EMAIL
+      [ -n "$TEAM_EMAIL" ] && local TEAM_AUTH=$(warp_api "token-step1" "" "" "" "" "" "" "" "$TEAM_ORGANIZATION" "$TEAM_EMAIL")
+    fi
   done
-  [[ -n "$TOKEN" && -z "$NAME" ]] && reading " $(text 41) " NAME
-  [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME="${NAME:-warp-go}"
+
+  if grep -sq 'organization=' <<< "$TEAM_AUTH"; then
+    local ERROR_TIMES=0
+    until grep -sq '^com.cloudflare.warp:' <<< "$TEAM_TOKEN"; do
+      unset TEAM_CODE TOKEN
+      (( ERROR_TIMES++ ))
+      if [[ "$ERROR_TIMES" > 5 ]]; then
+        error "\n $(text 39) \n"
+      else
+        [ "$ERROR_TIMES" = 1 ] && reading " $(text 110) " TEAM_CODE || reading " $(text 112) " TEAM_CODE
+        [[ "$TEAM_CODE" =~ ^[0-9]{6}$ ]] && local TEAM_TOKEN=$(warp_api "token-step2" "" "" "" "" "" "" "$TEAM_AUTH" "" "" "$TEAM_CODE")
+      fi
+    done
+
+    grep -sq '^com.cloudflare.warp:' <<< "$TEAM_TOKEN" && [ -z "$NAME" ] && TOKEN=${TEAM_TOKEN#*=} && reading " $(text 41) " NAME
+    [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME="${NAME:-warp-go}"
+  fi
 }
 
 # 免费 WARP 账户升级 WARP+ 或 Teams 账户
@@ -1108,7 +1152,7 @@ update() {
       ;;
     3 )
       unset QUOTA
-      input_token
+      get_token
       if [ -n "$TOKEN" ]; then
         k=' teams'
         register_api warp.conf.tmp 58 59
@@ -1171,7 +1215,7 @@ install() {
       input_license
       ;;
     2 )
-      input_token
+      get_token
   esac
 
   # 选择优先使用 IPv4 /IPv6 网络

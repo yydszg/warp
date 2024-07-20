@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号
-VERSION='3.0.10'
+VERSION='3.1.0'
 
 # 环境变量用于在Debian或Ubuntu操作系统中设置非交互式（noninteractive）安装模式
 export DEBIAN_FRONTEND=noninteractive
@@ -13,8 +13,8 @@ trap "rm -f /tmp/{wireguard-go-*,best_mtu,best_endpoint,endpoint,ip}; exit" INT
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/; 2. Scripts to update the warp api."
-C[1]="发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api"
+E[1]="1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own. Website to get a Zero Trust token: https://token.cloudflare.now.cc/"
+C[1]="1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置。获取 Zero Trust token 的网站: https://token.cloudflare.now.cc/"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -265,10 +265,10 @@ E[125]="\$(date +'%F %T') Region: \$REGION Done. IPv\$NF: \$WAN  \$COUNTRY  \$AS
 C[125]="\$(date +'%F %T') 区域 \$REGION 解锁成功，IPv\$NF: \$WAN  \$COUNTRY  \$ASNORG，1 小时后重新测试，刷 IP 运行时长: \$DAY 天 \$HOUR 时 \$MIN 分 \$SEC 秒"
 E[126]="\$(date +'%F %T') Try \${i}. Failed. IPv\$NF: \$WAN  \$COUNTRY  \$ASNORG. Retry after \${j} seconds. Brush ip runing time:\$DAY days \$HOUR hours \$MIN minutes \$SEC seconds"
 C[126]="\$(date +'%F %T') 尝试第\${i}次，解锁失败，IPv\$NF: \$WAN  \$COUNTRY  \$ASNORG，\${j}秒后重新测试，刷 IP 运行时长: \$DAY 天 \$HOUR 时 \$MIN 分 \$SEC 秒"
-E[127]="1. with URL file\n 2. with token (Easily available at https://web--public--warp-team-api--coia-mfs4.code.run)\n 3. manual input private key, IPv6 and Client id\n 4. share teams account (default)"
-C[127]="1. 通过在线文件\n 2. 使用 token (可通过 https://web--public--warp-team-api--coia-mfs4.code.run 轻松获取)\n 3. 手动输入 private key， IPv6 和 Client id\n 4. 共享 teams 账户 (默认)"
-E[128]="Token has expired, please re-enter:"
-C[128]="Token 已超时失效，请重新输入:"
+E[127]="1. with URL file\n 2. input the organization and email verification code\n 3. manual input private key, IPv6 and Client id\n 4. share teams account (default)"
+C[127]="1. 通过在线文件\n 2. 输入组织名和邮箱验证码获取\n 3. 手动输入 private key， IPv6 和 Client id\n 4. 共享 teams 账户 (默认)"
+E[128]="Organization does not exist, please re-enter:"
+C[128]="组织名不存在，请重新输入:"
 E[129]="The current Teams account is unavailable, automatically switch back to the free account"
 C[129]="当前 Teams 账户不可用，自动切换回免费账户"
 E[130]="Please confirm\\\n Private key\\\t: \$PRIVATEKEY \${MATCH[0]}\\\n Address IPv6\\\t: \$ADDRESS6/128 \${MATCH[1]}\\\n Client id\\\t: \$CLIENT_ID \${MATCH[2]}"
@@ -335,8 +335,8 @@ E[160]="WireProxy is not installed."
 C[160]="WireProxy 未安装"
 E[161]="WireProxy is installed and disconnected"
 C[161]="WireProxy 已安装，状态为断开连接"
-E[162]="Token is invalid, please re-enter:"
-C[162]="Token 无效，请重新输入:"
+E[162]="The verification code is wrong, please re-enter:"
+C[162]="验证码错误，请重新输入:"
 E[163]="Connect the Wireproxy (warp y)"
 C[163]="连接 Wireproxy (warp y)"
 E[164]="Disconnect the Wireproxy (warp y)"
@@ -395,6 +395,12 @@ E[190]="The configuration file warp.conf cannot be found. The script is aborted.
 C[190]="找不到配置文件 warp.conf，脚本中止，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[191]="Current operating system is: \$SYSTEM, Linux Client only supports Ubuntu, Debian and CentOS. The script is aborted. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[191]="当前操作系统是: \$SYSTEM。 Linux Client 只支持 Ubuntu, Debian 和 CentOS，脚本中止，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
+E[192]="Your organization"
+C[192]="组织名:"
+E[193]="E-mail address to receive the verification code:"
+C[193]="接收验证码的邮箱:"
+E[194]="Verification code:"
+C[194]="验证码:"
 
 # 自定义字体彩色，read 函数
 warning() { echo -e "\033[31m\033[01m$*\033[0m"; }  # 红色
@@ -524,6 +530,7 @@ check_dependencies() {
 
 # 获取 warp 账户信息
 warp_api(){
+  local WARP_API_URL="warp.cloudflare.now.cc"
   local RUN=$1
   local FILE_PATH=$2
   local WARP_LICENSE=$3
@@ -531,7 +538,10 @@ warp_api(){
   local WARP_TEAM_TOKEN=$5
   local WARP_CONVERT=$6
   local WARP_CONVERT_MODE=$7
-  local WARP_API_URL="warp.cloudflare.now.cc"
+  local TEAM_AUTH=$8
+  local TEAM_ORGANIZATION=$9
+  local TEAM_EMAIL=${10}
+  local TEAM_CODE=${11}
 
   if [ -s "$FILE_PATH" ]; then
     # Teams 账户文件
@@ -562,10 +572,10 @@ warp_api(){
       token=$(awk -F' *= *' '/^Token/{print $2}' "$FILE_PATH")
     fi
   fi
-  
+
   case "$RUN" in
     register )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=register&team_token=${WARP_TEAM_TOKE}"
+      curl -m5 -sL "https://${WARP_API_URL}/?run=register&team_token=${WARP_TEAM_TOKEN}"
       ;;
     device )
       curl -m5 -sL "https://${WARP_API_URL}/?run=device&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}"
@@ -593,6 +603,17 @@ warp_api(){
           curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT}" | grep -A4 'reserved' | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
         fi
       fi
+      ;;
+    token-step1 )
+      curl -m5 -sL "https://${WARP_API_URL}/?run=token&organization=${TEAM_ORGANIZATION}&email=${TEAM_EMAIL}"
+      ;;
+    token-step2 )
+      local TEAM_ORGANIZATION=$(sed "s/.*organization=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+      local A=$(sed "s/.*A=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+      local S=$(sed "s/.*S=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+      local N=$(sed "s/.*N=\([^&]\+\)&.*/\1/" <<< "$TEAM_AUTH")
+
+      curl -m5 -sL "https://${WARP_API_URL}/?run=token&organization=${TEAM_ORGANIZATION}&A=${A}&S=${S}&N=${N}&code=${TEAM_CODE}"
       ;;
   esac
 }
@@ -1663,28 +1684,39 @@ input_url_token() {
     fi
 
   elif [ "$1" = 'token' ]; then
-    [ -z "$TEAM_TOKEN" ] && reading " token: " TEAM_TOKEN
-    [ -z "$TEAM_TOKEN" ] && return
-
     local ERROR_TIMES=0
-    while [ "$ERROR_TIMES" -le 3 ]; do
+    until grep -sq 'organization=' <<< "$TEAM_AUTH"; do
+      unset TEAM_ORGANIZATION TEAM_AUTH
       (( ERROR_TIMES++ ))
-      if grep -q 'token is expired' <<< "$TEAMS"; then
-        reading " $(text 128) " TEAM_TOKEN
-      elif grep -q 'error' <<< "$TEAMS"; then
-        reading " $(text 162) " TEAM_TOKEN
-      elif grep -q 'organization' <<< "$TEAMS"; then
-        break
+      if [[ "$ERROR_TIMES" > 5 ]]; then
+        error "\n $(text 29) \n"
+      else
+        [ "$ERROR_TIMES" = 1 ] && reading "\n $(text 192) " TEAM_ORGANIZATION || reading "\n $(text 128) " TEAM_ORGANIZATION
+        [[ -n "$TEAM_ORGANIZATION" && -z "$TEAM_EMAIL" ]] && reading " $(text 193) " TEAM_EMAIL
+        [ -n "$TEAM_EMAIL" ] && local TEAM_AUTH=$(warp_api "token-step1" "" "" "" "" "" "" "" "$TEAM_ORGANIZATION" "$TEAM_EMAIL")
       fi
-      [ -z "$TEAM_TOKEN" ] && return
+    done
+
+    if grep -sq 'organization=' <<< "$TEAM_AUTH"; then
+      local ERROR_TIMES=0
+      until grep -sq '^com.cloudflare.warp:' <<< "$TEAM_TOKEN"; do
+        unset TEAM_CODE TEAM_TOKEN
+        (( ERROR_TIMES++ ))
+        if [[ "$ERROR_TIMES" > 5 ]]; then
+          error "\n $(text 29) \n"
+        else
+          [ "$ERROR_TIMES" = 1 ] && reading " $(text 194) " TEAM_CODE || reading " $(text 162) " TEAM_CODE
+          [[ "$TEAM_CODE" =~ ^[0-9]{6}$ ]] && local TEAM_TOKEN=$(warp_api "token-step2" "" "" "" "" "" "" "$TEAM_AUTH" "" "" "$TEAM_CODE")
+        fi
+      done
 
       unset TEAMS ADDRESS6 PRIVATEKEY CLIENT_ID
-      TEAMS=$(warp_api "register" "" "" "" "$TEAM_TOKEN" 2>&1)
+      TEAMS=$(warp_api "register" "" "" "" "${TEAM_TOKEN#*=}" 2>&1)
       ADDRESS6=$(expr "$TEAMS" : '.*"v6":[ ]*"\([^"]*\).*')
       PRIVATEKEY=$(expr "$TEAMS" : '.*"private_key":[ ]*"\([^"]*\).*')
       RESERVED=$(expr "$TEAMS" : '.*"client_id":[ ]*"\([^"]*\).*')
       CLIENT_ID="$(warp_api "convert" "" "" "" "" "$RESERVED" "decode")"
-    done
+    fi
 
   elif [ "$1" = 'input' ]; then
     reading " private key: " PRIVATEKEY
@@ -2013,7 +2045,7 @@ install() {
           input_url_token url
           ;;
         2 )
-          :
+          input_url_token token
           ;;
         3 )
           input_url_token input
@@ -2321,9 +2353,8 @@ WantedBy=multi-user.target
 EOF
     fi
 
-    # 保存好配置文件, 如有 Teams，改为 Teams 账户信息
+    # 保存好配置文件
     mv -f $0 /etc/wireguard/menu.sh >/dev/null 2>&1
-    [ "$CHOOSE_TEAMS" = '2' ] && input_url_token token
     if [ "${CONFIRM_TEAMS_INFO,,}" = 'y' ]; then
       backup_restore_delete backup wireproxy
       sed -i "s#\(PrivateKey[ ]\+=[ ]\+\).*#\1$PRIVATEKEY#g; s#\(Address[ ]\+=[ ]\+\).*\(/128$\)#\1$ADDRESS6\2#g; s#\(.*Reserved[ ]\+=[ ]\+\).*#\1$CLIENT_ID#g" /etc/wireguard/warp.conf
@@ -2364,7 +2395,6 @@ EOF
     [ "$IS_ANEMONE" = 'is_anemone' ] && ( iptables_solution; systemctl restart dnsmasq >/dev/null 2>&1 )
 
     # 经过确认的 teams private key 和 address6，改为 Teams 账户信息，不确认则不升级
-    [ "$CHOOSE_TEAMS" = '2' ] && input_url_token token
     if [ "${CONFIRM_TEAMS_INFO,,}" = 'y' ]; then
       backup_restore_delete backup warp
       sed -i "s#\(PrivateKey[ ]\+=[ ]\+\).*#\1$PRIVATEKEY#g; s#\(Address[ ]\+=[ ]\+\).*\(/128$\)#\1$ADDRESS6\2#g; s#\(.*Reserved[ ]\+=[ ]\+\).*#\1$CLIENT_ID#g" /etc/wireguard/warp.conf

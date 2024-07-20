@@ -10,19 +10,18 @@
 - [warp 运行脚本](README.md#warp-运行脚本)
 - [warp-go 运行脚本](README.md#warp-go-运行脚本)
 - [Cloudflare api](README.md#cloudflare-api)
-- [通过 warp 解锁 chatGPT 的方法](README.md#通过-warp-解锁-chatgpt-的方法)
 - [刷 Netflix 解锁 WARP IP 的方法](README.md#刷-Netflix-解锁-WARP-IP-的方法)
-- [指定网站分流到 "socks5" 的 xray 配置模板 (适用于 WARP Client Proxy 和 WireProxy)](README.md#指定网站分流到-socks5-的-xray-配置模板-适用于-warp-client-proxy-和-wireproxy)
-- [指定网站分流到 "interface" 的 xray 配置模板 (适用于 WARP Client Warp 和 warp / warp-go 非全局)](README.md#指定网站分流到-interface-的-xray-配置模板适用于-warp-client-warp-和-warp--warp-go-非全局)
+- [WARP socks5 或 interface 分流模板及解锁 chatGPT 的方法](README.md#warp-socks5-或-interface-分流模板及解锁-chatgpt-的方法)
 - [WARP+ License 及 ID 获取](README.md#warp-license-及-id-获取)
 - [WARP Teams 获取并用于 Linux 的方法](README.md#WARP-Teams-获取并用于-Linux-的方法)
-- [WARP 网络接口数据，临时、永久关闭和开启](README.md#warp-网络接口数据临时永久关闭和开启)
 - [WARP原理](README.md#WARP原理)
 - [鸣谢 WARP 贡献者和 CloudFlare WARP 全球站点服务状态列表](README.md#鸣谢下列作者的文章和项目)
 
 * * *
 
 ## 更新信息
+2024.7.18 menu.sh 3.1.0 / warp-go.sh v1.2.0 1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own; 1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置
+
 2024.7.8 menu.sh v3.0.10 / warp-go.sh v1.1.9 1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/ ; 2. Scripts to update the warp api; 1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api
 
 2024.6.30 menu.sh v3.0.9 1. By multithreading, parallel processing of optimal MTU, optimal endpoint, downloading wireguard-go and installing dependencies, the script runtime is reduced by more than half; 2. Reverse proxy http://ip-api.com/json and https://hits.seeyoufarm.com with cloudflare worker for better dual-stack support and faster fetching; 3. DNS Priority: Cloudflare 1.1.1.1 > Google 8.8.8.8; 1. 通过多线程，并行处理最优 MTU，最优 endpoint，下载 wireguard-go 和安装依赖， 脚本运行时间缩短一半以上; 2. 用 Cloudflare worker 反向代理 http://ip-api.com/json 和 https://hits.seeyoufarm.com，以更好支持双栈及提升获取速度; 3. DNS 优先级: Cloudflare 1.1.1.1 > Google 8.8.8.8
@@ -66,7 +65,7 @@
 >2023.5.15 Cloudflare api
 >Thanks to badafans open source project and patient guidance. Now released in linux using the Cloudflare WARP api. [badafans open source project](https://github.com/badafans/warp-reg)
 >Use method
->感谢大神 badafans的开源项目及耐心指导，现发布在linux下使用的Cloudflare WARP api，[badafans的开源项目](https://github.com/badafans/warp-reg) 
+>感谢大神 badafans的开源项目及耐心指导，现发布在linux下使用的Cloudflare WARP api，[badafans的开源项目](https://github.com/badafans/warp-reg)
 >使用方法
 >```
 >wget -N https://gitlab.com/fscarmen/warp/-/raw/main/api.sh && bash api.sh [option]
@@ -82,7 +81,7 @@
 >
 >2023.2.22 [Unlock chatGPT without installing warp; 不安装 warp 就能解锁 chatGPT 的方法](README.md#通过-warp-解锁-chatgpt-的方法)
 >
->2023.2.7 menu.sh V2.47 Iptables + dnsmasq + ipset solution supports chatGPT. Install via the 12 option in the menu or `bash menu.sh e`; Iptables + dnsmasq + ipset 方案支持 chatGPT. 安装方式: 菜单 12 选项或者 `bash menu.sh e` 
+>2023.2.7 menu.sh V2.47 Iptables + dnsmasq + ipset solution supports chatGPT. Install via the 12 option in the menu or `bash menu.sh e`; Iptables + dnsmasq + ipset 方案支持 chatGPT. 安装方式: 菜单 12 选项或者 `bash menu.sh e`
 >
 >2022.12.17 warp-go V1.1.0 Support OpenWrt system; 支持 OpenWrt 系统
 >
@@ -94,7 +93,7 @@
 >
 >2022.10.6 menu V2.45 1. Further improve the conversion function between accounts. You can even switch from one WARP+ to another; 2. Rebuild the account registration module; 1. 进一步完善账户间转换功能，你甚至可以从一个 WARP+ 换到另一个; 2. 重构账户注册模块
 >
->2022.9.10 Over 2,000 users star. Thank you to every solution creator. I'm just passing these on more widely to serve more players. Thank you to each user for your continued support. I wish you all good health and Happy Mid-Autumn Festival!    
+>2022.9.10 Over 2,000 users star. Thank you to every solution creator. I'm just passing these on more widely to serve more players. Thank you to each user for your continued support. I wish you all good health and Happy Mid-Autumn Festival!
 >项目 star 达 2000。感谢每位解决方案创造者。我只是把这些作更广泛的传递，服务更多玩家。感谢各用户一如既往的支持。祝大家身体健康，中秋节快乐！
 >
 >2022.8.29 warp-go V1.0.6 1.Fixed the bug that routing rules failed after restart in non-global mode; 2.Fixed the bug of not changing IP; 1.解决了非全局模式重启后，路由规则失效的bug; 2.解决了更换不了IP的bug
@@ -136,7 +135,7 @@
 >2022.4.21 WARP one-click script on macOS. A VPN that fast,modern,secure by WireGuard tunnel and WARP service  全网首发: macOS 一键脚本， 一个为免费、快速、安全的>基于 WireGuard 隧道，WARP 服务的 VPN。你可以理解为白嫖 CloudFlare 的科学服务了，也不需要服务器。
 >
 >项目地址: https://github.com/fscarmen/warp/tree/main/pc
->  
+>
 >2022.4.8  2.37 1. First publication on a global scale: After WirePorxy, another major technological breakthrough -- WARP-Cli's WARP mode solution. Thanks >to the original creator -- Teacher LUBAN. It solves two major pain points: 1) The instability of the traditional proxy model; 2) Currently HK does not >have a WARP service; 1. 全网首发: 继 WirePorxy 之后，又一重大技术突破，WARP-Cli 的 WARP 模式方案，感谢原创者 LUBAN 老师，引用大神的思路，解决两大通点: 1) 传统 proxy 模式的>断流和慢; 2) 解决 HK 没有 WARP 服务
 >
 >2022.3.27  2.36 1. First publication on a global scale. By WireProxy, Wireguard client that exposes itself as a socks5 proxy; Ths Fangliding for the >information:[#113](https://github.com/fscarmen/warp/issues/113); 2. WARP+ and Teams can be used in WireProxy; 3. Systemd and change Netflix IP for >WireProxy. 1. 全网首发: 通过 wireproxy，让 WARP 在本地建议一个 socks5 代理。感谢风扇滑翔翼 提供的资讯:[#113](https://github.com/fscarmen/warp/issues/113); 2. WARP+ >和 Teams 账户可用于 WireProxy 安装或者升级; 3. WireProxy systemd 进程守护，同时支持更换 Netflix IP
@@ -151,7 +150,7 @@
 >
 >2022.2.25  2.32: 1.Change the WARP endpoint; 2. Sync the Netflix title with lmc999; 1.更换 WARP 的 endpoint; 2. 同步 lmc999 的 Netflix 检测 title
 >
->2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine, content wgcf and >unblocking Netflix scripts. Change unlock warp ip automatically. 元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 >wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP    
+>2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine, content wgcf and >unblocking Netflix scripts. Change unlock warp ip automatically. 元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 >wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP
 >https://github.com/fscarmen/unlock_warp
 >
 >2022.2.11  2.31: 1.iptables + dnsmasq + ipset to unlock stream media. (Not available for IPv6 only VPS). It is better than setting the outbound in >xray/v2ray. 1.iptables + dnsmasq + ipset 最小化解锁流媒体，warp 只接管流媒体流量 (不适合 IPv6 only VPS)，比在 xray/v2ray 设置分流的方案要更好
@@ -186,14 +185,14 @@
 >wg-quick up wgcf; exit #运行 WGCF 并退出容器。
 >
 >```
->    
+>
 >![image](https://user-images.githubusercontent.com/62703343/148343358-67d0089a-591e-4af2-915c-e725422a5b0e.png)
 >
 >
 >2022.1.1  1.Happy new year bros. I wish everyone good health and lots of money. Thanks for your support to this project. This project belongs to bros, I >just summarized your fragmented information; 2.Add timestamp and running time while brushing Netflix IP. 1.元旦快乐，祝各位身体健康，赚钱多多。本项目是属于网友们的，我只是把大家碎片化的信息汇总而已; 2.新年第一更刷奈飞IP时加入时间戳和运行时长
 >
->2021.12 29  大家可以试试另两位 WARP 作者脚本:    
->1.甬哥 ```wget -N https://cdn.jsdelivr.net/gh/kkkyg/CFwarp/CFwarp.sh && bash CFwarp.sh```    
+>2021.12 29  大家可以试试另两位 WARP 作者脚本:
+>1.甬哥 ```wget -N https://cdn.jsdelivr.net/gh/kkkyg/CFwarp/CFwarp.sh && bash CFwarp.sh```
 >2.P3terx ```bash <(curl -fsSL git.io/warp.sh) menu```
 >
 >2021.12.28  2.25: IMPORTANT: 1.First publication on a global scale. Support architecture s390x for IBM Linux One(Choose WARP ipv6 single stack),thx Brother Big B and Misaka; 2.Support Alpine Linux, thx Dong gua; 3.add whitelist. support Debian bookworm; 重要更新: 1. 全网首发，支持 IBM Linux One 的 s390x 架构 CPU (请选用 WARP ipv6单栈)，感谢Misaka和大B哥借机器测试 2.支持 Alpine Linux 系统，感谢 Dong gua 借机器测试 3.支持 Debian bookworm系统，增加白名单，遇到没有大版本号的系统可以往里面放
@@ -233,9 +232,9 @@
 
 * 支持 WARP+ 账户，附带第三方刷 WARP+ 流量和升级内核 BBR 脚本
 * 普通用户友好的菜单，进阶者通过后缀选项快速搭建
-* 智能判断vps操作系统：Ubuntu 16.04、18.04、20.04; Debian 9、10、11，CentOS 7、8; Alpine 和 Arch Linux，请务必选择 LTS 系统   
+* 智能判断vps操作系统：Ubuntu 16.04、18.04、20.04; Debian 9、10、11，CentOS 7、8; Alpine 和 Arch Linux，请务必选择 LTS 系统
   智能判断硬件结构类型：AMD、ARM 和 s390x
-* 结合 Linux 版本和虚拟化方式，自动优选三个 WireGuard 方案。  
+* 结合 Linux 版本和虚拟化方式，自动优选三个 WireGuard 方案。
   网络性能方面：内核集成 WireGuard＞安装内核模块＞BoringTun＞wireguard-go
 * 智能判断 WGCF 作者 github库的最新版本 （Latest release）
 * 智能分析内网和公网IP生成 WGCF 配置文件
@@ -277,7 +276,7 @@ warp [option] [lisence]
   | a lisence | 在上面基础上把 WARP+ Lisence 添加进去，如 ```bash menu.sh a N5670ljg-sS9jD334-6o6g4M9F``` |
   | p | 刷 Warp+ 流量 |
   | c | 安装 WARP Linux Client，开启 Socks5 代理模式 |
-  | l | 安装 WARP Linux Client，开启 WARP 模式 | 
+  | l | 安装 WARP Linux Client，开启 WARP 模式 |
   | c lisence | 在上面基础上把 WARP+ Lisence 添加进去，如 ```bash menu.sh c N5670ljg-sS9jD334-6o6g4M9F``` |
   | r | WARP Linux Client 开关 |
   | v | 同步脚本至最新版本 |
@@ -299,10 +298,220 @@ wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh d
 warp i jp
 ```
 
-## 通过 warp 解锁 chatGPT 的方法
 
-方法原创，转引用请标明本项目出处。<br>
-适合范围: 除大陆、香港和美国 LA 外的所有 VPS，因为这些地方没有 wgcf 的 warp 服务<br>
+## warp-go 运行脚本
+首次运行
+```
+wget -N https://gitlab.com/fscarmen/warp/-/raw/main/warp-go.sh && bash warp-go.sh [option] [lisence]
+```
+再次运行
+```bash
+warp-go [option] [lisence]
+```
+  | [option] 变量1 变量2 | 具体动作说明 |
+  | ----------------- | --------------- |
+  | h | 帮助 |
+  | 4 | 原无论任何状态 -> WARP IPv4 |
+  | 4 lisence name | 把 WARP+ Lisence 和设备名添加进去，如 ```bash wire-go 4 N5670ljg-sS9jD334-6o6g4M9F Goodluck``` |
+  | 6 | 原无论任何状态 -> WARP IPv6 |
+  | d | 原无论任何状态 -> WARP 双栈 |
+  | o | warp-go 开关，脚本主动判断当前状态，自动开或关 |
+  | u | 卸载 warp-go |
+  | a | 免费 WARP 账户升级 WARP+ |
+  | a lisence name| 在上面基础上把 WARP+ Lisence 和设备名添加进去，如 ```bash menu.sh a N5670ljg-sS9jD334-6o6g4M9F Goodluck``` |
+  | v | 同步脚本至最新版本 |
+  | 其他或空值| 菜单界面 |
+
+
+## Cloudflare api
+
+### Cli-API 使用指南，浏览器带参数访问，或者使用 `curl` 命令可以执行 Warp API 请求，
+
+| run 参数 | 作用描述 | 参数 | 示例 |
+|---|---|---|---|
+|  | 使用指南 | | `https://warp.cloudflare.now.cc/` |
+| `register` | 注册新设备 | `team_token（可选）`, `format（可选）` | `https://warp.cloudflare.now.cc/?run=register&team_token=<Your-Team-Token>&format=<json\|yaml\|client\|wireguard\|warp-go\|\|clash\|xray\|sing-box\|qrencode>` |
+| `device` | 获取特定设备的详细信息 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=device&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `app` | 获取客户端配置 | `token` | `https://warp.cloudflare.now.cc/?run=app&token=<Your-Token>` |
+| `bind` | 将设备绑定到帐户 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=bind&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `name` | 设置设备名称 | `device_id`, `token`, `device_name` | `https://warp.cloudflare.now.cc/?run=name&device_id=<Your-Device-ID>&token=<Your-Token>&device_name=<Your-Device-Name>` |
+| `license` | 设置设备许可证 | `device_id`, `token`, `license` | `https://warp.cloudflare.now.cc/?run=license&device_id=<Your-Device-ID>&token=<Your-Token>&license=<Your-License>` |
+| `unbind` | 从帐户中取消绑定设备 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=unbind&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `cancel` | 取消设备注册 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=cancel&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `id` | Client ID 与 Reserved 转换 | `convert` | `https://warp.cloudflare.now.cc/?run=id&convert=<4-char-string\|Numbers1,Numbers2,Numbers3>` |
+| `key` | 生成一对 WireGuard 公私钥 | `format（可选）` | `https://warp.cloudflare.now.cc/?run=key&format=<json\|yaml>` |
+| `token` | 获取 Zero Trust token | `organization`, `email`, `code` | step1: `https://warp.cloudflare.now.cc/?organization=<Your-Organization>&email=<Your-Email>` </br> step2: `https://warp.cloudflare.now.cc/?organization=<Your-Organization>&A=<A-Value>&S=<S-Value>&N=<N-Value>&code=<Your-Code>` |
+| `sum` | 获取总计和 24 小时运行计数 |  | `https://warp.cloudflare.now.cc/?run=sum` |
+
+### Shell-API 运行脚本
+```
+wget -N https://gitlab.com/fscarmen/warp/-/raw/main/api.sh && bash api.sh [option]
+```
+  | [option] 变量  | 具体动作说明 |
+  | ------------- | ------------- |
+  | -h/--help     | 帮助 |
+  | -f/--file     | 保存账户注册信息的文件，支持官方api，client，wgcf 和 warp-go ，不填则手动输入 device id 和 api token |
+  | -r/--register | 注册账户 |
+  | -t/--token    | -r 注册时，使用 team token 注册，快速获取: https://web--public--warp-team-api--coia-mfs4.code.run |
+  | -d/--device   | 获取账户注册信息，包括 plus 流量等 |
+  | -a/--app      | 获取 app 信息 |
+  | -b/--bind     | 获取绑定设备信息，包括子设备 |
+  | -n/--name     | 修改设备名称 |
+  | -l/--license  | 修改 license |
+  | -u/--unbind   | 解绑设备 |
+  | -c/--cancle   | 注销账户 |
+  | -i/--id       | 显示 cliend id 与 reserved |
+
+
+## 刷 Netflix 解锁 WARP IP 的方法
+
+* 可以用另一个通过 WARP 解锁流媒体的一键脚本: [【刷 WARP IP】 - 为 WARP 解锁流媒体而生](https://github.com/fscarmen/unlock_warp)
+
+* 以刷 香港 hk 为例， 运行 `warp i`。建议在 screen， nohup 下后台运行
+
+* 如果长时间仍然未刷出解锁IP，可以查查 CloudFlare 当地是否在维护调路由：https://www.cloudflarestatus.com/
+
+
+## WARP socks5 或 interface 分流模板及解锁 chatGPT 的方法
+
+<details>
+    <summary> 指定网站分流到 socks5 的 xray 配置模板 (适用于 WARP Client Proxy 和 WireProxy)（点击即可展开或收起）</summary>
+<br>
+
+本地 socks5://127.0.0.1:40000
+并安装 [mack-a 八合一脚本](https://github.com/mack-a/v2ray-agent) 为例。编辑  ```/etc/v2ray-agent/xray/conf/10_ipv4_outbounds.json```
+
+```
+{
+    "outbounds":[
+        {
+            "protocol":"freedom"
+        },
+        {
+            "tag":"warp",
+            "protocol":"socks",
+            "settings":{
+                "servers":[
+                    {
+                        "address":"127.0.0.1",
+                        "port":40000 // 填写你的 socks5 端口
+                    }
+                ]
+            }
+        },
+        {
+            "tag":"WARP-socks5-v4",
+            "protocol":"freedom",
+            "settings":{
+                "domainStrategy":"UseIPv4"
+            },
+            "proxySettings":{
+                "tag":"warp"
+            }
+        },
+        {
+            "tag":"WARP-socks5-v6",
+            "protocol":"freedom",
+            "settings":{
+                "domainStrategy":"UseIPv6"
+            },
+            "proxySettings":{
+                "tag":"warp"
+            }
+        }
+    ],
+    "routing":{
+        "rules":[
+            {
+                "type":"field",
+                "domain":[
+                    "geosite:openai",
+                    "ip.gs"
+                ],
+                "outboundTag":"WARP-socks5-v4"
+            },
+            {
+                "type":"field",
+                "domain":[
+                    "geosite:google",
+                    "geosite:netflix",
+                    "p3terx.com"
+                ],
+                "outboundTag":"WARP-socks5-v6"
+            }
+        ]
+    }
+}
+```
+</details>
+
+<details>
+    <summary> 指定网站分流到 "interface" 的 xray 配置模板（适用于 WARP Client Warp 和 warp / warp-go 非全局）（点击即可展开或收起）</summary>
+<br>
+
+```
+{
+    "outbounds":[
+        {
+            "protocol":"freedom"
+        },
+        {
+            "tag":"WARP-interface-v4",
+            "protocol":"freedom",
+            "settings":{
+                "domainStrategy":"UseIPv4"
+            },
+            "streamSettings":{
+                "sockopt":{
+                    "interface":"CloudflareWARP", // warp 非全局模式填 warp; Client 的 Proxy 模式填 CloudflareWARP; warp-go 填 WARP
+                    "tcpFastOpen":true
+                }
+            }
+        },
+        {
+            "tag":"WARP-interface-v6",
+            "protocol":"freedom",
+            "settings":{
+                "domainStrategy":"UseIPv6"
+            },
+            "streamSettings":{
+                "sockopt":{
+                    "interface":"CloudflareWARP",
+                    "tcpFastOpen":true
+                }
+            }
+        }
+    ],
+    "routing":{
+        "domainStrategy":"AsIs",
+        "rules":[
+            {
+                "type":"field",
+                "domain":[
+                    "geosite:google",
+                    "geosite:openai",
+                    "ip.gs"
+                ],
+                "outboundTag":"WARP-interface-v4"
+            },
+            {
+                "type":"field",
+                "domain":[
+                    "geosite:netflix",
+                    "p3terx.com"
+                ],
+                "outboundTag":"WARP-interface-v6"
+            }
+        ]
+    }
+}
+```
+</details>
+
+<details>
+    <summary> 通过 WARP 解锁 chatGPT 的方法（点击即可展开或收起）</summary>
+<br>
+
 思路是使用已经注册的 warp 做链式代理的设置，此解决方法是最轻便的，用户只要有 xray 即可。具体做法是修改 xray 配置文件的 outbound 和 routing，模板如下
 ```
 {
@@ -378,230 +587,8 @@ warp i jp
     }
 }
 ```
-    
-## 刷 Netflix 解锁 WARP IP 的方法
+</details>
 
-也可以用另一个通过 WARP 解锁流媒体的一键脚本: [【刷 WARP IP】 - 为 WARP 解锁流媒体而生](https://github.com/fscarmen/unlock_warp)
-    
-以刷 香港 hk 为例
-
-* screen 多会话方式运行，会话任务名为 n
-```
-screen -USdm n warp i hk  ##创建名为 n 的会话
-screen -Udr n  ##进入会话 n 看运行情况
-## 按 Ctrl+a 再按 d 退出话 n，返回主界面
-screen -ls  ##查看会话窗口列表
-screen -SX n quit  ##关闭会议 n，结束运行
-```    
-
-* nohup & 后台运行方式，把结果输出到 log 文件
-```
-nohup warp i hk > logs 2>&1 &   ##放进后台运行
-jobs -l | grep warp  ##看后台任务
-cat logs  ##查看运行日志文件
-kill -9 $(jobs -l | grep warp | awk '{print $2}')  ##结束进程
-```     
-
-* crobtab 计划任务
-```
-echo '@reboot root warp i hk' >>/etc/crobtab   ##在计划任务里加入一条新任务
-sed -i '/warp i/d' /etc/crontab   ##删掉计划任务
-kill -9 $(pgrep -f warp)   ##杀掉正在运行的进程
-```     
-
-* 另外遇到问题仍然需要用户有一定的处理能力，如结束时没有网络，可以用 ```warp o``` 开关来获取，因此并没有写死在脚本里了。
-
-* 如果长时间仍然未刷出解锁IP，可以查查 CloudFlare 当地是否在维护调路由：https://www.cloudflarestatus.com/
-    
-## 指定网站分流到 socks5 的 xray 配置模板 (适用于 WARP Client Proxy 和 WireProxy)
-
-本地 socks5://127.0.0.1:40000
-并安装 [mack-a 八合一脚本](https://github.com/mack-a/v2ray-agent) 为例。编辑  ```/etc/v2ray-agent/xray/conf/10_ipv4_outbounds.json```
-
-```
-{
-    "outbounds":[
-        {
-            "protocol":"freedom"
-        },
-        {
-            "tag":"warp",
-            "protocol":"socks",
-            "settings":{
-                "servers":[
-                    {
-                        "address":"127.0.0.1",
-                        "port":40000 // 填写你的 socks5 端口
-                    }
-                ]
-            }
-        },
-        {
-            "tag":"WARP-socks5-v4",
-            "protocol":"freedom",
-            "settings":{
-                "domainStrategy":"UseIPv4"
-            },
-            "proxySettings":{
-                "tag":"warp"
-            }
-        },
-        {
-            "tag":"WARP-socks5-v6",
-            "protocol":"freedom",
-            "settings":{
-                "domainStrategy":"UseIPv6"
-            },
-            "proxySettings":{
-                "tag":"warp"
-            }
-        }
-    ],
-    "routing":{
-        "rules":[
-            {
-                "type":"field",
-                "domain":[
-                    "geosite:openai",
-                    "ip.gs"
-                ],
-                "outboundTag":"WARP-socks5-v4"
-            },
-            {
-                "type":"field",
-                "domain":[
-                    "geosite:google",
-                    "geosite:netflix",
-                    "p3terx.com"
-                ],
-                "outboundTag":"WARP-socks5-v6"
-            }
-        ]
-    }
-}
-```
-
-## 指定网站分流到 "interface" 的 xray 配置模板（适用于 WARP Client Warp 和 warp / warp-go 非全局）
-
-```
-{
-    "outbounds":[
-        {
-            "protocol":"freedom"
-        },
-        {
-            "tag":"WARP-interface-v4",
-            "protocol":"freedom",
-            "settings":{
-                "domainStrategy":"UseIPv4"
-            },
-            "streamSettings":{
-                "sockopt":{
-                    "interface":"CloudflareWARP", // warp 非全局模式填 warp; Client 的 Proxy 模式填 CloudflareWARP; warp-go 填 WARP
-                    "tcpFastOpen":true
-                }
-            }
-        },
-        {
-            "tag":"WARP-interface-v6",
-            "protocol":"freedom",
-            "settings":{
-                "domainStrategy":"UseIPv6"
-            },
-            "streamSettings":{
-                "sockopt":{
-                    "interface":"CloudflareWARP",
-                    "tcpFastOpen":true
-                }
-            }
-        }
-    ],
-    "routing":{
-        "domainStrategy":"AsIs",
-        "rules":[
-            {
-                "type":"field",
-                "domain":[
-                    "geosite:google",
-                    "geosite:openai",
-                    "ip.gs"
-                ],
-                "outboundTag":"WARP-interface-v4"
-            },
-            {
-                "type":"field",
-                "domain":[
-                    "geosite:netflix",
-                    "p3terx.com"
-                ],
-                "outboundTag":"WARP-interface-v6"
-            }
-        ]
-    }
-}
-```
-
-## warp-go 运行脚本
-首次运行
-```
-wget -N https://gitlab.com/fscarmen/warp/-/raw/main/warp-go.sh && bash warp-go.sh [option] [lisence]
-```
-再次运行
-```bash
-warp-go [option] [lisence]
-```
-  | [option] 变量1 变量2 | 具体动作说明 |
-  | ----------------- | --------------- |
-  | h | 帮助 |
-  | 4 | 原无论任何状态 -> WARP IPv4 |
-  | 4 lisence name | 把 WARP+ Lisence 和设备名添加进去，如 ```bash wire-go 4 N5670ljg-sS9jD334-6o6g4M9F Goodluck``` |
-  | 6 | 原无论任何状态 -> WARP IPv6 |
-  | d | 原无论任何状态 -> WARP 双栈 |
-  | o | warp-go 开关，脚本主动判断当前状态，自动开或关 |
-  | u | 卸载 warp-go |
-  | a | 免费 WARP 账户升级 WARP+ |
-  | a lisence name| 在上面基础上把 WARP+ Lisence 和设备名添加进去，如 ```bash menu.sh a N5670ljg-sS9jD334-6o6g4M9F Goodluck``` |
-  | v | 同步脚本至最新版本 |
-  | 其他或空值| 菜单界面 |
-
-
-## Cloudflare api
-
-### Warp 使用指南，使用 `curl` 命令可以执行 Warp API 请求。
-
-| run 参数 | 作用描述 | 参数 | 示例 |
-|---|---|---|---|
-|  | 使用指南 | | `https://warp.cloudflare.now.cc/` |
-| `register` | 注册新设备 | `team_token（可选）`, `format（可选）` | `https://warp.cloudflare.now.cc/?run=register&team_token=<Your-Team-Token>&format=<json\|yaml\|wireguard\|qrencode>` |
-| `device` | 获取特定设备的详细信息 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=device&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `app` | 获取客户端配置 | `token` | `https://warp.cloudflare.now.cc/?run=app&token=<Your-Token>` |
-| `bind` | 将设备绑定到帐户 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=bind&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `name` | 设置设备名称 | `device_id`, `token`, `device_name` | `https://warp.cloudflare.now.cc/?run=name&device_id=<Your-Device-ID>&token=<Your-Token>&device_name=<Your-Device-Name>` |
-| `license` | 设置设备许可证 | `device_id`, `token`, `license` | `https://warp.cloudflare.now.cc/?run=license&device_id=<Your-Device-ID>&token=<Your-Token>&license=<Your-License>` |
-| `unbind` | 从帐户中取消绑定设备 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=unbind&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `cancel` | 取消设备注册 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=cancel&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `id` | Client ID 与 Reserved 转换 | `convert` | `https://warp.cloudflare.now.cc/?run=id&convert=<4-char-string\|Numbers1,Numbers2,Numbers3>` |
-| `key` | 生成一对 WireGuard 公私钥 | `format（可选）` | `https://warp.cloudflare.now.cc/?run=key&format=<json\|yaml>` |
-| `sum` | 获取总计和 24 小时运行计数 |  | `https://warp.cloudflare.now.cc/?run=sum` |
-
-### 运行脚本
-```
-wget -N https://gitlab.com/fscarmen/warp/-/raw/main/api.sh && bash api.sh [option]
-```
-  | [option] 变量  | 具体动作说明 |
-  | ------------- | ------------- |
-  | -h/--help     | 帮助 |
-  | -f/--file     | 保存账户注册信息的文件，支持官方api，client，wgcf 和 warp-go ，不填则手动输入 device id 和 api token |
-  | -r/--register | 注册账户 |
-  | -t/--token    | -r 注册时，使用 team token 注册，快速获取: https://web--public--warp-team-api--coia-mfs4.code.run |
-  | -d/--device   | 获取账户注册信息，包括 plus 流量等 |
-  | -a/--app      | 获取 app 信息 |
-  | -b/--bind     | 获取绑定设备信息，包括子设备 |
-  | -n/--name     | 修改设备名称 |
-  | -l/--license  | 修改 license |
-  | -u/--unbind   | 解绑设备 |
-  | -c/--cancle   | 注销账户 |
-  | -i/--id       | 显示 cliend id 与 reserved |
 
 ## WARP+ License 及 ID 获取
 
@@ -611,24 +598,12 @@ wget -N https://gitlab.com/fscarmen/warp/-/raw/main/api.sh && bash api.sh [optio
 
 <img src="https://user-images.githubusercontent.com/62703343/136070323-47f2600a-13e4-4eb0-a64d-d7eb805c28e2.png" width="70%" />
 
-## WARP 网络接口数据，临时、永久关闭和开启
-
-WireGuard 网络接口数据，查看 ```wg```
-
-临时关闭和开启 WARP（reboot重启后恢复开启） ```warp o```
-官方原始指令 ```wg-quick down wgcf``` ，恢复启动 ```wg-quick up wgcf```
-
-禁止开机启动 ```systemctl disable --now wg-quick@wgcf```,恢复开机启动 ```systemctl enable --now wg-quick@wgcf```
-
 
 ## WARP Teams 获取并用于 Linux 的方法
 
-* 通过 Coia 的网站，填入 teams 的组织名、邮箱和验证码获取 token: `https://web--public--warp-team-api--coia-mfs4.code.run/`
+* https://token.cloudflare.now.cc/ , 通过 fscarmen 的网站
 
-* 在 vps 里运行以下指令获取 teams 配置的全部信息，保存在文件 `warp-account.conf`
-```
-bash <(wget -qO- https://gitlab.com/fscarmen/warp/-/raw/main/api.sh) -r -t <TOKEN>
-```
+* https://web--public--warp-team-api--coia-mfs4.code.run/, 通过 Coia 的网站
 
 ## WARP原理
 
@@ -653,12 +628,6 @@ WARP是CloudFlare提供的一项基于WireGuard的网络流量安全及加速服
 
 * 网络性能方面：内核集成＞内核模块＞wireguard-go
 
-Linux 5.6 及以上内核则已经集成了 WireGuard ，可以用 ```hostnamectl```或```uname -r```查看版本。
-
-甲骨文是 KVM 完整虚拟化的 VPS 主机，而官方系统由于版本较低，在不更换内核的前提下选择  "内核模块" 方案。如已升级内核在5.6及以上，将会自动选择 “内核集成” 方案。
-
-EUserv是 LXC 非完整虚拟化 VPS 主机，共享宿主机内核，不能更换内核，只能选择 "wireguard-go" 方案。
-    
 
 ## 鸣谢下列作者的文章和项目
 
@@ -670,7 +639,7 @@ EUserv是 LXC 非完整虚拟化 VPS 主机，共享宿主机内核，不能更�
 * 猫大: https://github.com/Oreomeow
 * Luminous: https://luotianyi.vc/5252.html
 * Hiram: https://hiram.wang/cloudflare-wrap-vps
-* Cloudflare: https://pkg.cloudflareclient.com/
+* Cloudflare: https://pkg.cloudflareclient.com/   
 https://blog.cloudflare.com/announcing-warp-for-linux-and-proxy-mode/   
 https://blog.cloudflare.com/argo-v2/
 * WireGuard: https://lists.zx2c4.com/pipermail/wireguard/2017-December/002201.html
@@ -685,7 +654,8 @@ https://github.com/acacia233/Project-WARP-Unlock
 * 所有的热心网友们
 
 服务提供（排名不分先后）:
-* fscarmen 的 Warp Api: https://warp.cloudflare.now.cc/
+* fscarmen 的 Warp API: https://warp.cloudflare.now.cc/
+* fscarmen 的 Zero Trust Token API: https://token.cloudflare.now.cc/
 * CloudFlare Warp(+): https://1.1.1.1/
 * WGCF 项目原作者: https://github.com/ViRb3/wgcf/
 * Coia 和 warp-go 团队: https://gitlab.com/ProjectWARP/warp-go
@@ -699,7 +669,7 @@ https://github.com/acacia233/Project-WARP-Unlock
 * WireProxy 作者: https://github.com/pufferffish/wireproxy
 * 获取公网 IP 及归属地查询: https://ifconfig.co/ , https://ip.gs/ , https://ip.sb/ , https://ip-api.com
 * 统计PV网: https://hits.seeyoufarm.com/
-* Coia 的网页版提出 Teams Token: https://web--public--warp-team-api--coia-mfs4.code.run
+* Coia 的网页版提取 Teams Token: https://web--public--warp-team-api--coia-mfs4.code.run
 
 CloudFlare WARP 全球站点和服务状态:
 * Operational = 正常。Re-routed = 检修状态: https://www.cloudflarestatus.com/
