@@ -192,14 +192,15 @@ cancle_account() {
   [[ -z "$id" && -z "$token" ]] && fetch_account_information
 
   local result=$(curl --request DELETE "https://api.cloudflareclient.com/v0a2158/reg/${id}" \
+  --head \
   --silent \
   --location \
   --header 'User-Agent: okhttp/3.12.1' \
   --header 'CF-Client-Version: a-6.10-2158' \
   --header 'Content-Type: application/json' \
-  --header "Authorization: Bearer ${token}")
+  --header "Authorization: Bearer ${token}" | awk '/HTTP/{print $(NF-1)}')
 
-  [ -z "$result" ] && echo " Success. The account has been cancelled. " || echo " Failure. The account is not available. "
+  grep -qw '204' <<< "$result" && echo " Success. The account has been cancelled. " || echo " Failure. The account is not available. "
 }
 
 # reserved 解码

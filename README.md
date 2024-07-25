@@ -20,16 +20,18 @@
 * * *
 
 ## 更新信息
+2024.7.25 menu.sh 3.1.1 / warp-go.sh v1.2.1 1. Support using the self-built WARP API at https://warp.cloudflare.now.cc/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime; 1. 支持使用自建 warp api: https://warp.cloudflare.now.cc/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，进一步缩短脚本运行时间
+
 2024.7.18 menu.sh 3.1.0 / warp-go.sh v1.2.0 1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own; 1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置
-
-2024.7.8 menu.sh v3.0.10 / warp-go.sh v1.1.9 1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/ ; 2. Scripts to update the warp api; 1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api
-
-2024.6.30 menu.sh v3.0.9 1. By multithreading, parallel processing of optimal MTU, optimal endpoint, downloading wireguard-go and installing dependencies, the script runtime is reduced by more than half; 2. Reverse proxy http://ip-api.com/json and https://hits.seeyoufarm.com with cloudflare worker for better dual-stack support and faster fetching; 3. DNS Priority: Cloudflare 1.1.1.1 > Google 8.8.8.8; 1. 通过多线程，并行处理最优 MTU，最优 endpoint，下载 wireguard-go 和安装依赖， 脚本运行时间缩短一半以上; 2. 用 Cloudflare worker 反向代理 http://ip-api.com/json 和 https://hits.seeyoufarm.com，以更好支持双栈及提升获取速度; 3. DNS 优先级: Cloudflare 1.1.1.1 > Google 8.8.8.8
 
 <details>
     <summary>历史更新 history（点击即可展开或收起）</summary>
 <br>
 
+>2024.7.8 menu.sh v3.0.10 / warp-go.sh v1.1.9 1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/ ; 2. Scripts to update the warp api; 1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api
+>
+>2024.6.30 menu.sh v3.0.9 1. By multithreading, parallel processing of optimal MTU, optimal endpoint, downloading wireguard-go and installing dependencies, the script runtime is reduced by more than half; 2. Reverse proxy http://ip-api.com/json and https://hits.seeyoufarm.com with cloudflare worker for better dual-stack support and faster fetching; 3. DNS Priority: Cloudflare 1.1.1.1 > Google 8.8.8.8; 1. 通过多线程，并行处理最优 MTU，最优 endpoint，下载 wireguard-go 和安装依赖， 脚本运行时间缩短一半以上; 2. 用 Cloudflare worker 反向代理 http://ip-api.com/json 和 https://hits.seeyoufarm.com，以更好支持双栈及提升获取速度; 3. DNS 优先级: Cloudflare 1.1.1.1 > Google 8.8.8.8
+>
 >2024.6.28 menu.sh v3.0.8 The official WARP Linux Client supports arm64 systems and is available in both socks5 proxy and Warp interface modes; 官方 WARP Linux Client 支持 arm64 系统， Socks5 proxy 模式 和 Warp interface 模式均可用
 >
 >2024.6.2 menu.sh v3.0.7 Support CentOS 9 / Alma Linux 9 / Rocky Linux 9 system; 支持 CentOS 9 / Alma Linux 9 / Rocky Linux 9 系统
@@ -339,8 +341,9 @@ warp-go [option] [lisence]
 | `unbind` | 从帐户中取消绑定设备 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=unbind&device_id=<Your-Device-ID>&token=<Your-Token>` |
 | `cancel` | 取消设备注册 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=cancel&device_id=<Your-Device-ID>&token=<Your-Token>` |
 | `id` | Client ID 与 Reserved 转换 | `convert` | `https://warp.cloudflare.now.cc/?run=id&convert=<4-char-string\|Numbers1,Numbers2,Numbers3>` |
-| `key` | 生成一对 WireGuard 公私钥 | `format（可选）` | `https://warp.cloudflare.now.cc/?run=key&format=<json\|yaml>` |
 | `token` | 获取 Zero Trust token | `organization`, `email`, `code` | step1: `https://warp.cloudflare.now.cc/?organization=<Your-Organization>&email=<Your-Email>` </br> step2: `https://warp.cloudflare.now.cc/?organization=<Your-Organization>&A=<A-Value>&S=<S-Value>&N=<N-Value>&code=<Your-Code>` |
+| `pluskey` | 生成指定数量的 1923PB Warp+ license | `num（可选，默认:1，最大:6）`, `maxretry（可选，默认:3）` | `https://warp.cloudflare.now.cc/?run=pluskey&num=2&maxretry=5` |
+| `key` | 生成一对 WireGuard 公私钥 | `format（可选）` | `https://warp.cloudflare.now.cc/?run=key&format=<json\|yaml>` |
 | `sum` | 获取总计和 24 小时运行计数 |  | `https://warp.cloudflare.now.cc/?run=sum` |
 
 ### Shell-API 运行脚本
@@ -651,6 +654,7 @@ https://github.com/acacia233/Project-WARP-Unlock
 * valetzx: https://gitlab.com/valetzx/pubfile
 * badafans cf api: https://github.com/badafans/warp-reg
 * chika0801: https://github.com/chika0801/Xray-examples/
+* xXcmd1152Xx: https://github.com/cmd1152/WarpPlusKeyGenerator-NG-lib
 * 所有的热心网友们
 
 服务提供（排名不分先后）:
