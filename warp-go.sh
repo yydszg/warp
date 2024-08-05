@@ -16,8 +16,8 @@ trap "rm -f /tmp/warp-go*; exit" INT
 
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
-E[1]="1. Support using the self-built WARP API at https://warp.cloudflare.now.cc/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime."
-C[1]="1. 支持使用自建 warp api: https://warp.cloudflare.now.cc/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，缩短脚本运行时间"
+E[1]="1. Support using the self-built WARP API at https://www.warpapi.us.kg/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime."
+C[1]="1. 支持使用自建 warp api: https://www.warpapi.us.kg/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，缩短脚本运行时间"
 E[2]="warp-go h (help)\n warp-go o (temporary warp-go switch)\n warp-go u (uninstall WARP web interface and warp-go)\n warp-go v (sync script to latest version)\n warp-go i (replace IP with Netflix support)\n warp-go 4/6 ( WARP IPv4/IPv6 single-stack)\n warp-go d (WARP dual-stack)\n warp-go n (WARP IPv4 non-global)\n warp-go g (WARP global/non-global switching)\n warp-go e (output wireguard and sing-box configuration file)\n warp-go a (Change to Free, WARP+ or Teams account)"
 C[2]="warp-go h (帮助）\n warp-go o (临时 warp-go 开关)\n warp-go u (卸载 WARP 网络接口和 warp-go)\n warp-go v (同步脚本至最新版本)\n warp-go i (更换支持 Netflix 的IP)\n warp-go 4/6 (WARP IPv4/IPv6 单栈)\n warp-go d (WARP 双栈)\n warp-go n (WARP IPv4 非全局)\n warp-go g (WARP 全局 / 非全局相互切换)\n warp-go e (输出 wireguard 和 sing-box 配置文件)\n warp-go a (更换到 Free，WARP+ 或 Teams 账户)"
 E[3]="This project is designed to add WARP network interface for VPS, using warp-go core, using various interfaces of CloudFlare-WARP, integrated wireguard-go, can completely replace WGCF. Save Hong Kong, Toronto and other VPS, can also get WARP IP. Thanks again @CoiaPrant and his team. Project address: https://gitlab.com/ProjectWARP/warp-go/-/tree/master/"
@@ -409,7 +409,7 @@ generate_pluskey() {
 
 # 获取 warp 账户信息
 warp_api(){
-  local WARP_API_URL="warp.cloudflare.now.cc"
+  local WARP_API_URL="www.warpapi.us.kg"
   local RUN=$1
   local FILE_PATH=$2
   local WARP_LICENSE=$3

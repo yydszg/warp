@@ -13,8 +13,8 @@ trap "rm -f /tmp/{wireguard-go-*,best_mtu,best_endpoint,endpoint,ip,license-tmp}
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="1. Support using the self-built WARP API at https://warp.cloudflare.now.cc/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime."
-C[1]="1. 支持使用自建 warp api: https://warp.cloudflare.now.cc/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，缩短脚本运行时间"
+E[1]="1. Support using the self-built WARP API at https://www.warpapi.us.kg/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime."
+C[1]="1. 支持使用自建 warp api: https://www.warpapi.us.kg/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，缩短脚本运行时间"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -534,7 +534,7 @@ check_dependencies() {
 
 # 获取 warp 账户信息
 warp_api(){
-  local WARP_API_URL="warp.cloudflare.now.cc"
+  local WARP_API_URL="www.warpapi.us.kg"
   local RUN=$1
   local FILE_PATH=$2
   local WARP_LICENSE=$3
