@@ -620,7 +620,7 @@ warp_api(){
       curl -m5 -sL "https://${WARP_API_URL}/?run=token&organization=${TEAM_ORGANIZATION}&A=${A}&S=${S}&N=${N}&code=${TEAM_CODE}"
       ;;
     pluskey )
-      curl -m30 -sL "https://${WARP_API_URL}/?run=pluskey"
+      curl -m20 --retry 3 -sL "https://${WARP_API_URL}/?run=pluskey"
       ;;
   esac
 }
@@ -631,7 +631,7 @@ generate_pluskey() {
   [ -n "$FILE_PATH" ] && warp_api pluskey | awk -F '"' '/licenseCode/{print $4}' > $FILE_PATH || warp_api pluskey | awk -F '"' '/licenseCode/{print $4}'
 }
 
-# 聚合 IP api 函数
+# 聚合 IP api 函数。由于 ip.sb 会对某些 ip 访问报 error code: 1015，所以使用备用 IP api: ifconfig.co
 ip_info() {
   local CHECK_46="$1"
   if [[ "$2" =~ ^[0-9]+$ ]]; then
@@ -646,7 +646,7 @@ ip_info() {
   IP_TRACE=$(curl --retry 2 -ksm5 $INTERFACE_SOCK5 https://www.cloudflare.com/cdn-cgi/trace | awk -F '=' '/^warp=/{print $NF}')
   if [ -n "$IP_TRACE" ]; then
     [ "$IS_UNINSTALL" = 'is_uninstall' ] && local API_IP=$(curl -$CHECK_46 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || local API_IP=$(curl --retry 2 -ksm5 $INTERFACE_SOCK5 --user-agent Mozilla $CHOOSE_IP_API | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
-    [ -n "$API_IP" ] && local IP_JSON=$(curl --retry 2 -ksm5 https://ip.forvps.gq/${API_IP}${IS_CHINESE})
+    [[ -n "$API_IP" && ! "$API_IP" =~ error[[:space:]]+code:[[:space:]]+1015 ]] && local IP_JSON=$(curl --retry 2 -ksm5 https://ip.forvps.gq/${API_IP}${IS_CHINESE}) || unset IP_JSON
     IP_JSON=${IP_JSON:-"$(curl --retry 3 -ks${CHECK_46}m5 $INTERFACE_SOCK5 --user-agent Mozilla https://ifconfig.co/json)"}
 
     if [ -n "$IP_JSON" ]; then
@@ -1772,14 +1772,14 @@ input_url_token() {
 # 升级 WARP+ 账户（如有），限制位数为空或者26位以防输入错误，WARP interface 可以自定义设备名(不允许字符串间有空格，如遇到将会以_代替)
 update_license() {
   [ -z "$LICENSE" ] && reading " $(text 61) " LICENSE
-  hint " $(text 100) " 
+  hint " $(text 100) "
   wait
   [ -z "$LICENSE" ] && [ -s /tmp/license-tmp ] && LICENSE=$(cat /tmp/license-tmp) && rm -f /tmp/license-tmp
   i=5
   until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
     (( i-- )) || true
     [ "$i" = 0 ] && error " $(text 29) " || reading " $(text 30) " LICENSE
-    hint " $(text 100) " 
+    hint " $(text 100) "
     wait
     [ -z "$LICENSE" ] && [ -s /tmp/license-tmp ] && LICENSE=$(cat /tmp/license-tmp) && rm -f /tmp/license-tmp
   done

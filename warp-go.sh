@@ -495,7 +495,7 @@ warp_api(){
       curl -m5 -sL "https://${WARP_API_URL}/?run=token&organization=${TEAM_ORGANIZATION}&A=${A}&S=${S}&N=${N}&code=${TEAM_CODE}"
       ;;
     pluskey )
-      curl -m30 -sL "https://${WARP_API_URL}/?run=pluskey"
+      curl -m20 --retry 3 -sL "https://${WARP_API_URL}/?run=pluskey"
       ;;
   esac
 }
@@ -513,7 +513,7 @@ check_install() {
       wget --no-check-certificate -T5 -qO- /tmp/warp-go.tar.gz https://gitlab.com/fscarmen/warp/-/raw/main/warp-go/warp-go_"$latest"_linux_"$ARCHITECTURE".tar.gz | tar xz -C /tmp/ warp-go
       chmod +x /tmp/warp-go
     }&
-  
+
     # 后台优选最佳 MTU
     {
       # 反复测试最佳 MTU。 Wireguard Header:IPv4=60 bytes,IPv6=80 bytes，1280 ≤ MTU ≤ 1420。 ping = 8(ICMP回显示请求和回显应答报文格式长度) + 20(IP首部) 。
@@ -524,7 +524,7 @@ check_install() {
         MTU=$((MTU-10))
         [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
       done
-    
+
       if [ "$MTU" -eq $((1500-28)) ]; then
         MTU=$MTU
       elif [ "$MTU" -le $((1280+80-28)) ]; then
@@ -536,9 +536,9 @@ check_install() {
         done
         (( MTU-- ))
       fi
-    
+
       MTU=$((MTU+28-80))
-    
+
       echo "$MTU" > /tmp/warp-go-mtu
     }&
 
@@ -546,33 +546,34 @@ check_install() {
     {
       wget $STACK -qO /tmp/endpoint https://gitlab.com/fscarmen/warp/-/raw/main/endpoint/warp-linux-${ARCHITECTURE//amd64*/amd64} && chmod +x /tmp/endpoint
       [ "$IPV4$IPV6" = 01 ] && wget $STACK -qO /tmp/ip https://gitlab.com/fscarmen/warp/-/raw/main/endpoint/ipv6 || wget $STACK -qO /tmp/ip https://gitlab.com/fscarmen/warp/-/raw/main/endpoint/ipv4
-    
+
       if [[ -s /tmp/endpoint && -s /tmp/ip ]]; then
         /tmp/endpoint -file /tmp/ip -output /tmp/endpoint_result >/dev/null 2>&1
         # 如果全部是数据包丢失，LOSS = 100%，说明 UDP 被禁止，生成标志 /tmp/noudp
         [ "$(grep -sE '[0-9]+[ ]+ms$' /tmp/endpoint_result | awk -F, 'NR==1 {print $2}')" = '100.00%' ] && touch /tmp/noudp || ENDPOINT=$(grep -sE '[0-9]+[ ]+ms$' /tmp/endpoint_result | awk -F, 'NR==1 {print $1}')
         rm -f /tmp/{endpoint,ip,endpoint_result}
       fi
-    
+
       # 如果失败，会有默认值 162.159.193.10:2408 或 [2606:4700:d0::a29f:c001]:2408
       [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.193.10:2408'}
-    
+
       echo "$ENDPOINT" > /tmp/warp-go-endpoint
     }&
   fi
 }
 
-# 检测 IPv4 IPv6 信息，WARP Ineterface 开启，普通还是 Plus账户 和 IP 信息
+# 检测 IPv4 IPv6 信息，WARP Ineterface 开启，普通还是 Plus账户 和 IP 信息。由于 ip.sb 会对某些 ip 访问报 error code: 1015，所以使用备用 IP api: ifconfig.co
 ip4_info() {
   unset IP4_JSON COUNTRY4 ASNORG4 TRACE4 IS_UNINSTALL
   IS_UNINSTALL="$1"
   [ "$L" = 'C' ] && IS_CHINESE=${IS_CHINESE:-'?lang=zh-CN'}
-  TRACE4=$(curl --retry 2 -ks4m5 https://www.cloudflare.com/cdn-cgi/trace $INTERFACE4 | awk -F '=' '/^warp=/{print $NF}')
+  TRACE4=$(curl --retry 2 -ks4m5 https://www.cloudflare.com/cdn-cgi/trace $INTERFACE_4 | awk -F '=' '/^warp=/{print $NF}')
   if [ -n "$TRACE4" ]; then
-    [ "$IS_UNINSTALL" = 'is_uninstall' ] && WAN4=$(curl -4 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || WAN4=$(curl --retry 2 -ks4m5 -A Mozilla https://api-ipv4.ip.sb/geoip $INTERFACE4 | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
-    [ -n "$WAN4" ] && IP4_JSON=$(curl --retry 2 -ksm5 --user-agent Mozilla https://ip.forvps.gq/${WAN4}${IS_CHINESE})
-    IP4_JSON=${IP4_JSON:-"$(curl --retry 2 -ks4m3 --user-agent Mozilla https://ifconfig.co/json $INTERFACE4)"}
+    [ "$IS_UNINSTALL" = 'is_uninstall' ] && WAN4=$(curl -4 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || WAN4=$(curl --retry 2 -ks4m5 -A Mozilla https://api-ipv4.ip.sb/geoip $INTERFACE_4 | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
+    [[ -n "$WAN4" && ! "$WAN4" =~ error[[:space:]]+code:[[:space:]]+1015 ]] && IP4_JSON=$(curl --retry 2 -ksm5 --user-agent Mozilla https://ip.forvps.gq/${WAN4}${IS_CHINESE}) || unset WAN4
+    IP4_JSON=${IP4_JSON:-"$(curl --retry 2 -ks4m3 --user-agent Mozilla https://ifconfig.co/json $INTERFACE_4)"}
     if [ -n "$IP4_JSON" ]; then
+      WAN4=${WAN4:-"$(sed -En 's/.*"ip":[ ]*"([^"]+)".*/\1/p' <<< "$IP4_JSON")"}
       COUNTRY4=$(sed -En 's/.*"country":[ ]*"([^"]+)".*/\1/p' <<< "$IP4_JSON")
       ASNORG4=$(sed -En 's/.*"(isp|asn_org)":[ ]*"([^"]+)".*/\2/p' <<< "$IP4_JSON")
     fi
@@ -583,12 +584,13 @@ ip6_info() {
   unset IP6_JSON COUNTRY6 ASNORG6 TRACE6 IS_UNINSTALL
   IS_UNINSTALL="$1"
   [ "$L" = 'C' ] && IS_CHINESE=${IS_CHINESE:-'?lang=zh-CN'}
-  TRACE6=$(curl --retry 5 -ks6m5 https://www.cloudflare.com/cdn-cgi/trace $INTERFACE6 | awk -F '=' '/^warp=/{print $NF}')
+  TRACE6=$(curl --retry 5 -ks6m5 https://www.cloudflare.com/cdn-cgi/trace $INTERFACE_6 | awk -F '=' '/^warp=/{print $NF}')
   if [ -n "$TRACE6" ]; then
-    [ "$IS_UNINSTALL" = 'is_uninstall' ] && WAN6=$(curl -6 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || WAN6=$(curl --retry 5 -ks6m5 -A Mozilla https://api-ipv6.ip.sb/geoip $INTERFACE6 | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
-    [ -n "$WAN6" ] && IP6_JSON=$(curl --retry 2 -ksm5 --user-agent Mozilla https://ip.forvps.gq/${WAN6}${IS_CHINESE})
-    IP6_JSON=${IP6_JSON:-"$(curl --retry 2 -ks6m3 --user-agent Mozilla https://ifconfig.co/json $INTERFACE6)"}
+    [ "$IS_UNINSTALL" = 'is_uninstall' ] && WAN6=$(curl -6 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || WAN6=$(curl --retry 5 -ks6m5 -A Mozilla https://api-ipv6.ip.sb/geoip $INTERFACE_6 | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
+    [[ -n "$WAN6" && ! "$WAN6" =~ error[[:space:]]+code:[[:space:]]+1015 ]] && IP6_JSON=$(curl --retry 2 -ksm5 --user-agent Mozilla https://ip.forvps.gq/${WAN6}${IS_CHINESE}) || unset WAN6
+    IP6_JSON=${IP6_JSON:-"$(curl --retry 2 -ks6m3 --user-agent Mozilla https://ifconfig.co/json $INTERFACE_6)"}
     if [ -n "$IP6_JSON" ]; then
+      WAN6=${WAN6:-"$(sed -En 's/.*"ip":[ ]*"([^"]+)".*/\1/p' <<< "$IP6_JSON")"}
       COUNTRY6=$(sed -En 's/.*"country":[ ]*"([^"]+)".*/\1/p' <<< "$IP6_JSON")
       ASNORG6=$(sed -En 's/.*"(isp|asn_org)":[ ]*"([^"]+)".*/\2/p' <<< "$IP6_JSON")
     fi
@@ -755,7 +757,7 @@ change_ip() {
 
 # 关闭 WARP 网络接口，并删除 warp-go
 uninstall() {
-  unset IP4 IP6 WAN4 WAN6 COUNTRY4 COUNTRY6 ASNORG4 ASNORG6 INTERFACE4 INTERFACE6
+  unset IP4 IP6 WAN4 WAN6 COUNTRY4 COUNTRY6 ASNORG4 ASNORG6 INTERFACE_4 INTERFACE_6
 
   # 如已安装 warp_unlock 项目，先行卸载
   [ -s /usr/bin/warp_unlock.sh ] && bash <(curl -sSL https://gitlab.com/fscarmen/warp_unlock/-/raw/main/unlock.sh) -U -$L
@@ -790,8 +792,8 @@ ver() {
 net() {
   unset IP4 IP6 WAN4 WAN6 COUNTRY4 COUNTRY6 ASNORG4 ASNORG6
   i=1; j=5
-  grep -qE "^AllowedIPs[ ]+=.*0\.\0\/0|#AllowedIPs" 2>/dev/null /opt/warp-go/warp.conf && INTERFACE4='--interface WARP'
-  grep -qE "^AllowedIPs[ ]+=.*\:\:\/0|#AllowedIPs" 2>/dev/null /opt/warp-go/warp.conf && INTERFACE6='--interface WARP'
+  grep -qE "^AllowedIPs[ ]+=.*0\.\0\/0|#AllowedIPs" 2>/dev/null /opt/warp-go/warp.conf && INTERFACE_4='--interface WARP'
+  grep -qE "^AllowedIPs[ ]+=.*\:\:\/0|#AllowedIPs" 2>/dev/null /opt/warp-go/warp.conf && INTERFACE_6='--interface WARP'
   hint " $(text_eval 20)\n $(text_eval 59) "
   [ "$KEEP_FREE" != 1 ] && ${SYSTEMCTL_RESTART[int]}
   grep -q "#AllowedIPs" /opt/warp-go/warp.conf && sleep 8 || sleep 1
@@ -949,7 +951,7 @@ check_stack() {
     CONF1=("014" "104" "114" "11N4")
     CONF2=("016" "106" "116" "11N6")
     CONF3=("01D" "10D" "11D" "11ND")
-  elif [ "$m" = 8 ]; then
+  elif [ "$m" = 9 ]; then
     error "\n $(text 108) \n"
   fi
 }
@@ -987,7 +989,7 @@ stack_switch() {
   elif [[ "$SWITCHCHOOSE" = [46D] ]]; then
     if [[ "$TO_GLOBAL" = [Yy] ]]; then
       if [[ "$T4@$T6@$SWITCHCHOOSE" =~ '1@0@4'|'0@1@6'|'1@1@D' ]]; then
-        grep -q "^AllowedIPs.*0\.\0\/0" 2>/dev/null /opt/warp-go/warp.conf || unset INTERFACE4 INTERFACE6
+        grep -q "^AllowedIPs.*0\.\0\/0" 2>/dev/null /opt/warp-go/warp.conf || unset INTERFACE_4 INTERFACE_6
         OPTION=o && net
         exit 0
       else
@@ -1017,13 +1019,13 @@ stack_switch() {
   [ "${#TO}" != 3 ] && error " $(text 10) " || sed -i "$(eval echo "\$SWITCH$TO")" /opt/warp-go/warp.conf
   case "$TO" in
     014|114 )
-      INTERFACE4='--interface WARP'; unset INTERFACE6
+      INTERFACE_4='--interface WARP'; unset INTERFACE_6
       ;;
     106|116 )
-      INTERFACE6='--interface WARP'; unset INTERFACE4
+      INTERFACE_6='--interface WARP'; unset INTERFACE_4
       ;;
     01D|10D )
-      INTERFACE4='--interface WARP'; INTERFACE6='--interface WARP'
+      INTERFACE_4='--interface WARP'; INTERFACE_6='--interface WARP'
   esac
 
   OPTION=o && net
@@ -1080,24 +1082,24 @@ EOF
     fi
   fi
 
-  # 判断机器原生状态类型
-  IPV4=0; IPV6=0
-  LAN4=$(ip route get 192.168.193.10 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}')
-  LAN6=$(ip route get 2606:4700:d0::a29f:c001 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}')
-  [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1
-  [[ "$LAN6" != "::1" && "$LAN6" =~ ^[a-f0-9:]+$ ]] && INET6=1
-  [ "$INET6" = 1 ] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && IPV6=1 && STACK=-6
-  [ "$INET4" = 1 ] && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && IPV4=1 && STACK=-4
-
   if [ "$STATUS" != 0 ]; then
     if grep -qE "^AllowedIPs.*\.0/0,::/0|^#AllowedIPs" 2>/dev/null /opt/warp-go/warp.conf; then
-      INTERFACE4='--interface WARP'; INTERFACE6='--interface WARP'
+      INTERFACE_4='--interface WARP'; INTERFACE_6='--interface WARP'; local IP_INTERFACE_4='dev WARP'; local IP_INTERFACE_6='dev WARP'; local PING_INTERFACE_4='-I WARP'; local PING_INTERFACE_6='-I WARP'
     elif grep -q '^AllowedIPs.*\.0/0$' 2>/dev/null /opt/warp-go/warp.conf; then
-      INTERFACE4='--interface WARP'; unset INTERFACE6
+      INTERFACE_4='--interface WARP'; unset INTERFACE_6; local IP_INTERFACE_4='dev WARP'; unset IP_INTERFACE_6; local PING_INTERFACE_4='-I WARP'; unset PING_INTERFACE_6
     elif grep -q '^AllowedIPs.*::/0$' 2>/dev/null /opt/warp-go/warp.conf; then
-      INTERFACE6='--interface WARP'; unset INTERFACE4
+      INTERFACE_6='--interface WARP'; unset INTERFACE_4; unset IP_INTERFACE_4; local IP_INTERFACE_6='dev WARP'; unset PING_INTERFACE_4; local PING_INTERFACE_6='-I WARP'
     fi
   fi
+
+  # 判断机器原生状态类型
+  IPV4=0; IPV6=0
+  LAN4=$(ip route get 192.168.193.10 $IP_INTERFACE_4 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}')
+  LAN6=$(ip route get 2606:4700:d0::a29f:c001 $IP_INTERFACE_6 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}')
+  [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && local INET4=1
+  [[ "$LAN6" != "::1" && "$LAN6" =~ ^[a-f0-9:]+$ ]] && local INET6=1
+  [ "$INET6" = 1 ] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 $PING_INTERFACE_4 >/dev/null 2>&1 && IPV6=1 && STACK=-6
+  [ "$INET4" = 1 ] && ping -c2 -W3 162.159.193.10 $PING_INTERFACE_6 >/dev/null 2>&1 && IPV4=1 && STACK=-4
 
   [ "$IPV4" = 1 ] && ip4_info
   [ "$IPV6" = 1 ] && ip6_info
@@ -1153,7 +1155,7 @@ best_endpoint() {
 input_license() {
   [ -z "$LICENSE" ] && reading " $(text 38) " LICENSE
   if [ -z "$LICENSE" ]; then
-    hint " $(text 43) " 
+    hint " $(text 43) "
     wait
     [ -s /tmp/warp-go-license ] && LICENSE=$(cat /tmp/warp-go-license) && rm -f /tmp/warp-go-license
   fi
@@ -1162,7 +1164,7 @@ input_license() {
     (( i-- )) || true
     [ "$i" = 0 ] && error "$(text 39)" || reading " $(text_eval 40) " LICENSE
     if [ -z "$LICENSE" ]; then
-      hint " $(text 43) " 
+      hint " $(text 43) "
       wait
       [ -s /tmp/warp-go-license ] && LICENSE=$(cat /tmp/warp-go-license) && rm -f /tmp/warp-go-license
     fi
@@ -1174,14 +1176,14 @@ input_license() {
 # 升级 WARP+ 账户（如有），限制位数为空或者26位以防输入错误，WARP interface 可以自定义设备名(不允许字符串间有空格，如遇到将会以_代替)
 update_license() {
   [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
-  hint " $(text 43) " 
+  hint " $(text 43) "
   wait
   [ -z "$LICENSE" ] && [ -s /tmp/warp-go-license ] && LICENSE=$(cat /tmp/warp-go-license) && rm -f /tmp/warp-go-license
   i=5
   until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
     (( i-- )) || true
     [ "$i" = 0 ] && error "$(text 39)" || reading " $(text_eval 40) " LICENSE
-    hint " $(text 43) " 
+    hint " $(text 43) "
     wait
     [ -z "$LICENSE" ] && [ -s /tmp/warp-go-license ] && LICENSE=$(cat /tmp/warp-go-license) && rm -f /tmp/warp-go-license
   done
@@ -1210,7 +1212,7 @@ get_token() {
       unset TEAM_CODE TOKEN
       (( ERROR_TIMES++ ))
       if [[ "$ERROR_TIMES" > 5 ]]; then
-        error "\n $(text 39) \n"  
+        error "\n $(text 39) \n"
       else
         [ "$ERROR_TIMES" = 1 ] && reading " $(text 110) " TEAM_CODE || reading " $(text 112) " TEAM_CODE
         [[ "$TEAM_CODE" =~ ^[0-9]{6}$ ]] && local TEAM_TOKEN=$(warp_api "token-step2" "" "" "" "" "" "" "$TEAM_AUTH" "" "" "$TEAM_CODE")
