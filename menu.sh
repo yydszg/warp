@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号
-VERSION='3.1.2'
+VERSION='3.1.3'
 
 # 环境变量用于在Debian或Ubuntu操作系统中设置非交互式（noninteractive）安装模式
 export DEBIAN_FRONTEND=noninteractive
@@ -13,8 +13,8 @@ trap "rm -f /tmp/{wireguard-go-*,best_mtu,best_endpoint,endpoint,ip}; exit" INT
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="1. Remove the function of generating licenses from the previous version because cloning Warp+ licenses is officially prohibited; 2. Remove unnecessary dependencies on python3."
-C[1]="1. 由于官方禁止了克隆 Warp+ license，故去掉上个版本生成 license 的功能; 2. 去掉不必要的依赖 python3"
+E[1]="The Linux Client adds the MASQUE protocol option, available in both Proxy mode (menu 5) and WarpProxy mode (menu 14)."
+C[1]="Linux Client 增加 MASQUE 协议可选项，Proxy 模式（菜单5）和 WarpProxy 模式（菜单14）都可以使用"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -403,8 +403,10 @@ E[194]="Verification code:"
 C[194]="验证码:"
 E[195]="Organization does not exist, please re-enter:"
 C[195]="组织名不存在，请重新输入:"
-E[196]="// Official Client bug: If using a WARP+ license, IPv6 cannot be used. For more details, see the community discussion: https://community.cloudflare.com/t/losing-ipv6-connectivity-with-warp/568971"
-C[196]="// 官方 Client bug，如使用 WARP+ license，不能使用 IPv6，详见社区：https://community.cloudflare.com/t/losing-ipv6-connectivity-with-warp/568971"
+E[196]="Official Client bug, can't use IPv6 if using WARP+ license when tunnel protocol is WireGuard. For more details, see the community discussion: https://community.cloudflare.com/t/losing-ipv6-connectivity-with-warp/568971"
+C[196]="官方 Client bug，在隧道协议为 WireGuard 时，如使用 WARP+ license，不能使用 IPv6，详见社区：https://community.cloudflare.com/t/losing-ipv6-connectivity-with-warp/568971"
+E[197]="Please choose the WARP tunnel protocol:\n 1. MASQUE (default)\n 2. WireGuard"
+C[197]="请选择 WARP 隧道协议:\n 1. MASQUE (默认)\n 2. WireGuard "
 
 # 自定义字体彩色，read 函数
 warning() { echo -e "\033[31m\033[01m$*\033[0m"; }  # 红色
@@ -1233,6 +1235,7 @@ uninstall() {
   rm -f /usr/bin/wg-quick.{origin,reserved}
   rm -f /tmp/{best_mtu,best_endpoint,wireguard-go-*}
   rm -f /etc/wireguard/{wgcf-account.conf,warp-temp.conf,warp-account.conf,warp_unlock.sh,warp.conf.bak,warp.conf,up,proxy.conf.bak,proxy.conf,menu.sh,license,language,info-temp.log,info.log,down,account-temp.conf,NonGlobalUp.sh,NonGlobalDown.sh}
+  [ -s /var/lib/cloudflare-warp/mdm.xml ] && rm -f /var/lib/cloudflare-warp/mdm.xml
   [[ -e /etc/wireguard && -z "$(ls -A /etc/wireguard/)" ]] && rmdir /etc/wireguard
 
   # 选择自动卸载依赖执行以下
@@ -1352,7 +1355,8 @@ client_onoff() {
     warp-cli --accept-tos disconnect >/dev/null 2>&1
     info " $(text 91) " && exit 0
   else
-    warp-cli --accept-tos connect >/dev/null 2>&1; sleep 2
+    warp-cli --accept-tos connect >/dev/null 2>&1
+    [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 8 || sleep 2
     local CLIENT_MODE=$(warp-cli --accept-tos settings | awk '/Mode:/{for (i=0; i<NF; i++) if ($i=="Mode:") {print $(i+1)}}')
     if [ "$CLIENT_MODE" = 'WarpProxy' ]; then
       ip_case d client
@@ -2445,9 +2449,13 @@ EOF
 
 client_install() {
   settings() {
+    # 如果隧道协议选择是 MASQUE，增加相应文件
+    [ "$TUNNEL_PROTOCOL" = 'is_masque' ] && echo -e "<dict>\n    <key>warp_tunnel_protocol</key>\n    <string>masque</string>\n</dict>" > /var/lib/cloudflare-warp/mdm.xml
+
     # 设置为代理模式，如有 WARP+ 账户，修改 license 并升级
     info " $(text 84) "
     warp-cli --accept-tos registration new >/dev/null 2>&1
+
     # 注册失败，给予一个免费账户。否则根据是否有 License 来升级
     if [[ $(warp-cli --accept-tos registration show) =~ 'Error: Missing registration' ]]; then
       [ ! -d /var/lib/cloudflare-warp ] && mkdir -p /var/lib/cloudflare-warp
@@ -2467,22 +2475,29 @@ client_install() {
     wait
     [ -e /tmp/noudp ] && rm -f /tmp/noudp && error "\n $(text 188) \n"
 
-    # 根据优选出来的 endpoint 设置
-    [ -e /tmp/best_endpoint ] && ENDPOINT=$(cat /tmp/best_endpoint) && rm -f /tmp/best_endpoint
-    warp-cli --accept-tos tunnel endpoint set $ENDPOINT >/dev/null 2>&1
-    [ "$(warp-cli --accept-tos settings | awk '/WARP endpoint/{print $NF}')" = "$ENDPOINT" ] && info "\n $(text 81) \n"
+    # 在 WireGuard 协议下，根据优选出来的 endpoint 设置
+    if [ -e /tmp/best_endpoint ]; then
+      if [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ]; then
+        ENDPOINT=$(cat /tmp/best_endpoint)
+        warp-cli --accept-tos tunnel endpoint set $ENDPOINT >/dev/null 2>&1
+        [ "$(warp-cli --accept-tos settings | awk '/WARP endpoint/{print $NF}')" = "$ENDPOINT" ] && info "\n $(text 81) \n"
+      fi
+      rm -f /tmp/best_endpoint
+    fi
+
+    # 关闭隧道 qlog logging
+    warp-cli --accept-tos debug qlog disable >/dev/null 2>&1
 
     # 判断安装模式: IS_LUBAN=is_luban 为 warp interface 模式，否则为 socks5 proxy 模式
     if [ "$IS_LUBAN" = 'is_luban' ]; then
       i=1; j=3
       hint " $(text 11)\n $(text 12) "
-      #####  warp-cli --accept-tos tunnel ip-range add/remove <cidr>
+      ##### 这里待官方更新命令 warp-cli --accept-tos tunnel ip-range add/remove <cidr> ， 暂时只能用 add-excluded-route
       warp-cli --accept-tos add-excluded-route 0.0.0.0/0 >/dev/null 2>&1
       warp-cli --accept-tos add-excluded-route ::0/0 >/dev/null 2>&1
       warp-cli --accept-tos mode warp >/dev/null 2>&1
-      warp-cli --accept-tos tunnel endpoint "$ENDPOINT" >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
-      sleep 5
+      [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 10
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       until [[ -n "$CFWARP_WAN4" && -n "$CFWARP_WAN6" ]]; do
@@ -2492,7 +2507,7 @@ client_install() {
         rule_del >/dev/null 2>&1
         sleep 2
         warp-cli --accept-tos connect >/dev/null 2>&1
-        sleep 5
+        [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 10
         rule_add >/dev/null 2>&1
         ip_case d is_luban
         if [ "$i" = "$j" ]; then
@@ -2505,9 +2520,9 @@ client_install() {
     else
       warp-cli --accept-tos mode proxy >/dev/null 2>&1
       warp-cli --accept-tos proxy port "$PORT" >/dev/null 2>&1
-      warp-cli --accept-tos tunnel endpoint "$ENDPOINT" >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
-      sleep 2 && [[ ! $(ss -nltp | awk '{print $NF}' | awk -F \" '{print $2}') =~ warp-svc ]] && error " $(text 87) " || info " $(text 86) "
+      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 8 || sleep 2
+      ss -nltp | awk '{print $NF}' | awk -F \" '{print $2}' | grep -q 'warp-svc' && info " $(text 86) " || error " $(text 87) "
     fi
   }
 
@@ -2520,7 +2535,13 @@ client_install() {
   [[ "$SYSTEM" = 'CentOS' && "$(expr "$SYS" : '.*\s\([0-9]\{1,\}\)\.*')" -le 7 ]] && error " $(text 145) "
 
   # 询问是否有 WARP+ 或 Teams 账户
-  [ -z "$CHOOSE_TYPE" ] && warning "\n $(text 196) " && hint "\n $(text 128) \n" && reading " $(text 50) " CHOOSE_TYPE
+  warning "\n $(text 196) "
+
+  # 选择使用的 WARP 隧道协议
+  [ -z "$CHOOSE_TUNNEL_PROTOCOL" ] && hint "\n $(text 197) \n" && reading " $(text 50) " CHOOSE_TUNNEL_PROTOCOL
+  grep -qw '2' <<< "$CHOOSE_TUNNEL_PROTOCOL" && TUNNEL_PROTOCOL=is_wiregaurd || TUNNEL_PROTOCOL=is_masque
+
+  [ -z "$CHOOSE_TYPE" ] && hint "\n $(text 128) \n" && reading " $(text 50) " CHOOSE_TYPE
   grep -qw '2' <<< "$CHOOSE_TYPE" && input_license is_client
 
   # 安装 WARP Linux Client
@@ -2532,8 +2553,8 @@ client_install() {
     if grep -q "CentOS\|Fedora" <<< "$SYSTEM"; then
       curl -fsSl https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo | tee /etc/yum.repos.d/cloudflare-warp.repo
     else
-      # 暂时没有 Ubuntu 24.04 (noble)，替换为 22.04 (jammy)
-      local VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/{print $2}' /etc/os-release | sed 's/noble/jammy/')
+      local VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/{print $2}' /etc/os-release)
+      [ -x "$(type -p gpg)" ] || ${PACKAGE_INSTALL[int]} gnupg 2>/dev/null
       curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
       echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $VERSION_CODENAME main" | tee /etc/apt/sources.list.d/cloudflare-client.list
     fi
@@ -2801,13 +2822,14 @@ change_to_plus() {
 
     # 流程3:使用新 License 升级账户
     warp-cli --accept-tos registration new >/dev/null 2>&1 &&
-    [ -n "$LICENSE" ] && LICENSE_STATUS=$(warp-cli --accept-tos registration license "$LICENSE")
+    [ -n "$LICENSE" ] && sleep 2 && LICENSE_STATUS=$(warp-cli --accept-tos registration license "$LICENSE")
     sleep 1
 
     # 流程4:如成功则删除原账户信息文件，保存 license 并显示结果; 如失败则看原账户有没有 License 用于还原
     if [ "$LICENSE_STATUS" = Success ]; then
       backup_restore_delete delete
       echo "$LICENSE" > /etc/wireguard/license
+      sleep 2
     else
       case "$LICENSE_STATUS" in
           *Invalid\ license* )
@@ -2826,6 +2848,7 @@ change_to_plus() {
     local CLIENT_ACCOUNT=$(warp-cli --accept-tos registration show 2>/dev/null | awk '/type/{print $3}')
     unset AC && TYPE=' Free' && [ "$CLIENT_ACCOUNT" = Limited ] && CLIENT_AC='+' && TYPE='+' && check_quota client
     if [ "$CLIENT_MODE" = 'Warp' ]; then
+      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 8
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       [ "$TYPE" = '+' ] && CLIENT_PLUS="$(text 63): $QUOTA"
@@ -3055,7 +3078,8 @@ update() {
     [ "$CLIENT_ACCOUNT" = Limited ] && ACCOUNT_TYPE='+' && CHANGE_TYPE=$(text 178) && check_quota client && PLUS_QUOTA="$(text 63): $QUOTA"
 
     if [ -z "$CHOOSE_TYPE" ]; then
-      warning "\n $(text 196) " && hint " $(text 173) "
+      warp-cli --accept-tos settings | awk '/protocol:/{print $NF}' | grep -wq 'WireGuard' && warning "\n $(text 196) "
+      hint " $(text 173) "
       [ "$OPTION" != a ] && hint " 0. $(text 49) \n" || hint " 0. $(text 76) \n"
       reading " $(text 50) " CHOOSE_TYPE
     fi
@@ -3304,58 +3328,58 @@ menu_setting
 
 # 设置部分后缀 3/3
 case "$OPTION" in
-a )
-  if [[ "$2" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; then
-    CHOOSE_TYPE=2 && LICENSE=$2
-  elif [[ "$2" =~ ^http ]]; then
-    CHOOSE_TYPE=3 && CHOOSE_TEAMS=1 && TEAM_URL=$2
-  elif [[ "$2" =~ ^ey && "${#2}" -gt 120 ]]; then
-    CHOOSE_TYPE=3 && CHOOSE_TEAMS=2 && TEAM_TOKEN=$2
-  fi
-  update
-  ;;
-# 在已运行 Linux Client 前提下，不能安装 WARP IPv4 或者双栈网络接口。如已经运行 WARP ，参数 4,6,d 从原来的安装改为切换
-[46d] )
-  if [ -e /etc/wireguard/warp.conf ]; then
-    SWITCHCHOOSE="${OPTION^^}"
-    stack_switch
-  else
-    case "$OPTION" in
-      4 )
-        [[ "$CLIENT" = [35] ]] && error " $(text 110) "
-        CONF=${CONF1[n]}
-        ;;
-      6 )
-        CONF=${CONF2[n]}
-        ;;
-      d )
-        [[ "$CLIENT" = [35] ]] && error " $(text 110) "
-        CONF=${CONF3[n]}
-    esac
-    install
-  fi
-  ;;
-c )
-  client_install
-  ;;
-l )
-  IS_LUBAN=is_luban && client_install
-  ;;
-a )
-  update
-  ;;
-e )
-  stream_solution
-  ;;
-w )
-  wireproxy_solution
-  ;;
-k )
-  kernel_reserved_switch
-  ;;
-g )
-  [ ! -e /etc/wireguard/warp.conf ] && ( GLOBAL_OR_NOT_CHOOSE=2 && CONF=${CONF3[n]} && install; true ) || working_mode_switch
-  ;;
-* )
-  menu
+  a )
+    if [[ "$2" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; then
+      CHOOSE_TYPE=2 && LICENSE=$2
+    elif [[ "$2" =~ ^http ]]; then
+      CHOOSE_TYPE=3 && CHOOSE_TEAMS=1 && TEAM_URL=$2
+    elif [[ "$2" =~ ^ey && "${#2}" -gt 120 ]]; then
+      CHOOSE_TYPE=3 && CHOOSE_TEAMS=2 && TEAM_TOKEN=$2
+    fi
+    update
+    ;;
+  # 在已运行 Linux Client 前提下，不能安装 WARP IPv4 或者双栈网络接口。如已经运行 WARP ，参数 4,6,d 从原来的安装改为切换
+  [46d] )
+    if [ -e /etc/wireguard/warp.conf ]; then
+      SWITCHCHOOSE="${OPTION^^}"
+      stack_switch
+    else
+      case "$OPTION" in
+        4 )
+          [[ "$CLIENT" = [35] ]] && error " $(text 110) "
+          CONF=${CONF1[n]}
+          ;;
+        6 )
+          CONF=${CONF2[n]}
+          ;;
+        d )
+          [[ "$CLIENT" = [35] ]] && error " $(text 110) "
+          CONF=${CONF3[n]}
+      esac
+      install
+    fi
+    ;;
+  c )
+    client_install
+    ;;
+  l )
+    IS_LUBAN=is_luban && client_install
+    ;;
+  a )
+    update
+    ;;
+  e )
+    stream_solution
+    ;;
+  w )
+    wireproxy_solution
+    ;;
+  k )
+    kernel_reserved_switch
+    ;;
+  g )
+    [ ! -e /etc/wireguard/warp.conf ] && ( GLOBAL_OR_NOT_CHOOSE=2 && CONF=${CONF3[n]} && install; true ) || working_mode_switch
+    ;;
+  * )
+    menu
 esac
