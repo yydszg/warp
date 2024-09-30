@@ -1356,7 +1356,7 @@ client_onoff() {
     info " $(text 91) " && exit 0
   else
     warp-cli --accept-tos connect >/dev/null 2>&1
-    [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 8 || sleep 2
+    [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 12 || sleep 2
     local CLIENT_MODE=$(warp-cli --accept-tos settings | awk '/Mode:/{for (i=0; i<NF; i++) if ($i=="Mode:") {print $(i+1)}}')
     if [ "$CLIENT_MODE" = 'WarpProxy' ]; then
       ip_case d client
@@ -2497,7 +2497,7 @@ client_install() {
       warp-cli --accept-tos add-excluded-route ::0/0 >/dev/null 2>&1
       warp-cli --accept-tos mode warp >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
-      [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 10
+      [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 12
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       until [[ -n "$CFWARP_WAN4" && -n "$CFWARP_WAN6" ]]; do
@@ -2507,7 +2507,7 @@ client_install() {
         rule_del >/dev/null 2>&1
         sleep 2
         warp-cli --accept-tos connect >/dev/null 2>&1
-        [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 10
+        [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 12
         rule_add >/dev/null 2>&1
         ip_case d is_luban
         if [ "$i" = "$j" ]; then
@@ -2521,7 +2521,7 @@ client_install() {
       warp-cli --accept-tos mode proxy >/dev/null 2>&1
       warp-cli --accept-tos proxy port "$PORT" >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
-      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 8 || sleep 2
+      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 12 || sleep 2
       ss -nltp | awk '{print $NF}' | awk -F \" '{print $2}' | grep -q 'warp-svc' && info " $(text 86) " || error " $(text 87) "
     fi
   }
@@ -2848,7 +2848,7 @@ change_to_plus() {
     local CLIENT_ACCOUNT=$(warp-cli --accept-tos registration show 2>/dev/null | awk '/type/{print $3}')
     unset AC && TYPE=' Free' && [ "$CLIENT_ACCOUNT" = Limited ] && CLIENT_AC='+' && TYPE='+' && check_quota client
     if [ "$CLIENT_MODE" = 'Warp' ]; then
-      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 8
+      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 12
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       [ "$TYPE" = '+' ] && CLIENT_PLUS="$(text 63): $QUOTA"
