@@ -2492,9 +2492,8 @@ client_install() {
     if [ "$IS_LUBAN" = 'is_luban' ]; then
       i=1; j=3
       hint " $(text 11)\n $(text 12) "
-      ##### 这里待官方更新命令 warp-cli --accept-tos tunnel ip-range add/remove <cidr> ， 暂时只能用 add-excluded-route
-      warp-cli --accept-tos add-excluded-route 0.0.0.0/0 >/dev/null 2>&1
-      warp-cli --accept-tos add-excluded-route ::0/0 >/dev/null 2>&1
+      warp-cli --accept-tos tunnel ip add-range 0.0.0.0/0 >/dev/null 2>&1
+      warp-cli --accept-tos tunnel ip add-range ::0/0 >/dev/null 2>&1
       warp-cli --accept-tos mode warp >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
       [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 12
