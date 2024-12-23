@@ -20,6 +20,8 @@
 * * *
 
 ## 更新信息
+2024.12.24 menu.sh v3.1.4 / warp-go.sh v1.2.3 Support Docker to externally listen on 0.0.0.0/0 without requiring the use of host network mode. Thanks to Bro @Anthony_Tel; 支持 Docker 在无需使用 host 网络模式的情况下，对外监听 0.0.0.0/0。感谢网友 @Anthony_Tel
+
 2024.9.24 menu.sh v3.1.3 The Linux Client adds the MASQUE protocol option, available in both Proxy mode (menu 5) and WarpProxy mode (menu 14); Linux Client 增加 MASQUE 协议可选项，Proxy 模式（菜单5）和 WarpProxy 模式（菜单14）都可以使用
 
 2024.9.14 menu.sh v3.1.2 / warp-go.sh v1.2.2 1. Remove the function of generating licenses from the previous version because cloning Warp+ licenses is officially prohibited; 2. Remove unnecessary dependencies on python3; 1. 由于官方禁止了克隆 Warp+ license，故去掉上个版本生成 license 的功能; 2. 去掉不必要的依赖 python3
