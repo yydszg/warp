@@ -26,15 +26,15 @@
 
 2024.9.14 menu.sh v3.1.2 / warp-go.sh v1.2.2 1. Remove the function of generating licenses from the previous version because cloning Warp+ licenses is officially prohibited; 2. Remove unnecessary dependencies on python3; 1. 由于官方禁止了克隆 Warp+ license，故去掉上个版本生成 license 的功能; 2. 去掉不必要的依赖 python3
 
-2024.7.25 menu.sh v3.1.1 / warp-go.sh v1.2.1 1. Support using the self-built WARP API at https://www.warpapi.us.kg/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime; 1. 支持使用自建 warp api: https://www.warpapi.us.kg/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，进一步缩短脚本运行时间
+2024.7.25 menu.sh v3.1.1 / warp-go.sh v1.2.1 1. Support using the self-built WARP API at https://warp.cloudflare.now.cc/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime; 1. 支持使用自建 warp api: https://warp.cloudflare.now.cc/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，进一步缩短脚本运行时间
 
-2024.7.18 menu.sh v3.1.0 / warp-go.sh v1.2.0 1. Use self-built warp api: https://www.warpapi.us.kg/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own; 1. 使用自建 warp api: https://www.warpapi.us.kg/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置
+2024.7.18 menu.sh v3.1.0 / warp-go.sh v1.2.0 1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own; 1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置
 
 <details>
     <summary>历史更新 history（点击即可展开或收起）</summary>
 <br>
 
->2024.7.8 menu.sh v3.0.10 / warp-go.sh v1.1.9 1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://www.warpapi.us.kg/ ; 2. Scripts to update the warp api; 1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://www.warpapi.us.kg/; 2. 脚本更新 warp api
+>2024.7.8 menu.sh v3.0.10 / warp-go.sh v1.1.9 1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/ ; 2. Scripts to update the warp api; 1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api
 >
 >2024.6.30 menu.sh v3.0.9 1. By multithreading, parallel processing of optimal MTU, optimal endpoint, downloading wireguard-go and installing dependencies, the script runtime is reduced by more than half; 2. Reverse proxy http://ip-api.com/json and https://hits.seeyoufarm.com with cloudflare worker for better dual-stack support and faster fetching; 3. DNS Priority: Cloudflare 1.1.1.1 > Google 8.8.8.8; 1. 通过多线程，并行处理最优 MTU，最优 endpoint，下载 wireguard-go 和安装依赖， 脚本运行时间缩短一半以上; 2. 用 Cloudflare worker 反向代理 http://ip-api.com/json 和 https://hits.seeyoufarm.com，以更好支持双栈及提升获取速度; 3. DNS 优先级: Cloudflare 1.1.1.1 > Google 8.8.8.8
 >
@@ -337,20 +337,18 @@ warp-go [option] [lisence]
 
 | run 参数 | 作用描述 | 参数 | 示例 |
 |---|---|---|---|
-|  | 使用指南 | | `https://www.warpapi.us.kg/` |
-| `register` | 注册新设备 | `team_token（可选）`, `format（可选）` | `https://www.warpapi.us.kg/?run=register&team_token=<Your-Team-Token>&format=<json\|yaml\|client\|wireguard\|warp-go\|\|clash\|xray\|sing-box\|qrencode>` |
-| `device` | 获取特定设备的详细信息 | `device_id`, `token` | `https://www.warpapi.us.kg/?run=device&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `app` | 获取客户端配置 | `token` | `https://www.warpapi.us.kg/?run=app&token=<Your-Token>` |
-| `bind` | 将设备绑定到帐户 | `device_id`, `token` | `https://www.warpapi.us.kg/?run=bind&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `name` | 设置设备名称 | `device_id`, `token`, `device_name` | `https://www.warpapi.us.kg/?run=name&device_id=<Your-Device-ID>&token=<Your-Token>&device_name=<Your-Device-Name>` |
-| `license` | 设置设备许可证 | `device_id`, `token`, `license` | `https://www.warpapi.us.kg/?run=license&device_id=<Your-Device-ID>&token=<Your-Token>&license=<Your-License>` |
-| `unbind` | 从帐户中取消绑定设备 | `device_id`, `token` | `https://www.warpapi.us.kg/?run=unbind&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `cancel` | 取消设备注册 | `device_id`, `token` | `https://www.warpapi.us.kg/?run=cancel&device_id=<Your-Device-ID>&token=<Your-Token>` |
-| `id` | Client ID 与 Reserved 转换 | `convert` | `https://www.warpapi.us.kg/?run=id&convert=<4-char-string\|Numbers1,Numbers2,Numbers3>` |
-| `token` | 获取 Zero Trust token | `organization`, `email`, `code` | step1: `https://www.warpapi.us.kg/?organization=<Your-Organization>&email=<Your-Email>` </br> step2: `https://www.warpapi.us.kg/?organization=<Your-Organization>&A=<A-Value>&S=<S-Value>&N=<N-Value>&code=<Your-Code>` |
-| `pluskey` | 生成指定数量的 1923PB Warp+ license | `num（可选，默认:1，最大:6）`, `maxretry（可选，默认:3）` | `https://www.warpapi.us.kg/?run=pluskey&num=2&maxretry=5` |
-| `key` | 生成一对 WireGuard 公私钥 | `format（可选）` | `https://www.warpapi.us.kg/?run=key&format=<json\|yaml>` |
-| `sum` | 获取总计和 24 小时运行计数 |  | `https://www.warpapi.us.kg/?run=sum` |
+|  | 使用指南 | | `https://warp.cloudflare.now.cc/` |
+| `register` | 注册新设备 | `team_token（可选）`, `format（可选）` | `https://warp.cloudflare.now.cc/?run=register&team_token=<Your-Team-Token>&format=<json\|yaml\|client\|wireguard\|warp-go\|\|clash\|xray\|sing-box\|qrencode>` |
+| `device` | 获取特定设备的详细信息 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=device&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `app` | 获取客户端配置 | `token` | `https://warp.cloudflare.now.cc/?run=app&token=<Your-Token>` |
+| `bind` | 将设备绑定到帐户 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=bind&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `name` | 设置设备名称 | `device_id`, `token`, `device_name` | `https://warp.cloudflare.now.cc/?run=name&device_id=<Your-Device-ID>&token=<Your-Token>&device_name=<Your-Device-Name>` |
+| `license` | 设置设备许可证 | `device_id`, `token`, `license` | `https://warp.cloudflare.now.cc/?run=license&device_id=<Your-Device-ID>&token=<Your-Token>&license=<Your-License>` |
+| `unbind` | 从帐户中取消绑定设备 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=unbind&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `cancel` | 取消设备注册 | `device_id`, `token` | `https://warp.cloudflare.now.cc/?run=cancel&device_id=<Your-Device-ID>&token=<Your-Token>` |
+| `id` | Client ID 与 Reserved 转换 | `convert` | `https://warp.cloudflare.now.cc/?run=id&convert=<4-char-string\|Numbers1,Numbers2,Numbers3>` |
+| `token` | 获取 Zero Trust token | `organization`, `email`, `code` | step1: `https://warp.cloudflare.now.cc/?organization=<Your-Organization>&email=<Your-Email>` </br> step2: `https://warp.cloudflare.now.cc/?organization=<Your-Organization>&A=<A-Value>&S=<S-Value>&N=<N-Value>&code=<Your-Code>` |
+| `key` | 生成一对 WireGuard 公私钥 | `format（可选）` | `https://warp.cloudflare.now.cc/?run=key&format=<json\|yaml>` |
 
 ### Shell-API 运行脚本
 ```
@@ -664,7 +662,7 @@ https://github.com/acacia233/Project-WARP-Unlock
 * 所有的热心网友们
 
 服务提供（排名不分先后）:
-* fscarmen 的 Warp API: https://www.warpapi.us.kg/
+* fscarmen 的 Warp API: https://warp.cloudflare.now.cc/
 * fscarmen 的 Zero Trust Token API: https://token.warpapi.us.kg/
 * CloudFlare Warp(+): https://1.1.1.1/
 * WGCF 项目原作者: https://github.com/ViRb3/wgcf/
