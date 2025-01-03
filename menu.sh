@@ -19,12 +19,12 @@ E[2]="The script must be run as root, you can enter sudo -i and then download an
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[3]="没有加载 TUN 模块，请在管理后台开启或联系供应商了解如何开启，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
-E[4]="The WARP server cannot be connected. It may be a China Mainland VPS. You can manually ping 162.159.193.10 or ping -6 2606:4700:d0::a29f:c001.You can run the script again if the connect is successful. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
-C[4]="与 WARP 的服务器不能连接,可能是大陆 VPS，可手动 ping 162.159.193.10 或 ping -6 2606:4700:d0::a29f:c001，如能连通可再次运行脚本，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
+E[4]="The WARP server cannot be connected. It may be a China Mainland VPS. You can manually ping 162.159.192.1 or ping -6 2606:4700:d0::a29f:c001.You can run the script again if the connect is successful. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
+C[4]="与 WARP 的服务器不能连接,可能是大陆 VPS，可手动 ping 162.159.192.1 或 ping -6 2606:4700:d0::a29f:c001，如能连通可再次运行脚本，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[5]="The script supports Debian, Ubuntu, CentOS, Fedora, Arch or Alpine systems only. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[5]="本脚本只支持 Debian、Ubuntu、CentOS、Fedora、Arch 或 Alpine 系统,问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
-E[6]="warp h (help)\n warp n (Get the WARP IP)\n warp o (Turn off WARP temporarily)\n warp u (Turn off and uninstall WARP interface and Socks5 Linux Client)\n warp b (Upgrade kernel, turn on BBR, change Linux system)\n warp a (Change account to Free, WARP+ or Teams)\n warp p (Getting WARP+ quota by scripts)\n warp v (Sync the latest version)\n warp r (Connect/Disconnect WARP Linux Client)\n warp 4/6 (Add WARP IPv4/IPv6 interface)\n warp d (Add WARP dualstack interface IPv4 + IPv6)\n warp c (Install WARP Linux Client and set to proxy mode)\n warp l (Install WARP Linux Client and set to WARP mode)\n warp i (Change the WARP IP to support Netflix)\n warp e (Install Iptables + dnsmasq + ipset solution)\n warp w (Install WireProxy solution)\n warp y (Connect/Disconnect WireProxy socks5)\n warp k (Switch between kernel and wireguard-go-reserved)\n warp g (Switch between warp global and non-global)\n warp s 4/6/d (Set stack proiority: IPv4 / IPv6 / VPS default)\n"
-C[6]="warp h (帮助菜单）\n warp n (获取 WARP IP)\n warp o (临时warp开关)\n warp u (卸载 WARP 网络接口和 Socks5 Client)\n warp b (升级内核、开启BBR及DD)\n warp a (更换账户为 Free，WARP+ 或 Teams)\n warp p (刷WARP+流量)\n warp v (同步脚本至最新版本)\n warp r (WARP Linux Client 开关)\n warp 4/6 (WARP IPv4/IPv6 单栈)\n warp d (WARP 双栈)\n warp c (安装 WARP Linux Client，开启 Socks5 代理模式)\n warp l (安装 WARP Linux Client，开启 WARP 模式)\n warp i (更换支持 Netflix 的IP)\n warp e (安装 Iptables + dnsmasq + ipset 解决方案)\n warp w (安装 WireProxy 解决方案)\n warp y (WireProxy socks5 开关)\n warp k (切换 wireguard 内核 / wireguard-go-reserved)\n warp g (切换 warp 全局 / 非全局)\n warp s 4/6/d (优先级: IPv4 / IPv6 / VPS default)\n"
+E[6]="warp h (help)\n warp n (Get the WARP IP)\n warp o (Turn off WARP temporarily)\n warp u (Turn off and uninstall WARP interface and Socks5 Linux Client)\n warp b (Upgrade kernel, turn on BBR, change Linux system)\n warp a (Change account to Free, WARP+ or Teams)\n warp v (Sync the latest version)\n warp r (Connect/Disconnect WARP Linux Client)\n warp 4/6 (Add WARP IPv4/IPv6 interface)\n warp d (Add WARP dualstack interface IPv4 + IPv6)\n warp c (Install WARP Linux Client and set to proxy mode)\n warp l (Install WARP Linux Client and set to WARP mode)\n warp i (Change the WARP IP to support Netflix)\n warp e (Install Iptables + dnsmasq + ipset solution)\n warp w (Install WireProxy solution)\n warp y (Connect/Disconnect WireProxy socks5)\n warp k (Switch between kernel and wireguard-go-reserved)\n warp g (Switch between warp global and non-global)\n warp s 4/6/d (Set stack proiority: IPv4 / IPv6 / VPS default)\n"
+C[6]="warp h (帮助菜单）\n warp n (获取 WARP IP)\n warp o (临时warp开关)\n warp u (卸载 WARP 网络接口和 Socks5 Client)\n warp b (升级内核、开启BBR及DD)\n warp a (更换账户为 Free，WARP+ 或 Teams)\n warp v (同步脚本至最新版本)\n warp r (WARP Linux Client 开关)\n warp 4/6 (WARP IPv4/IPv6 单栈)\n warp d (WARP 双栈)\n warp c (安装 WARP Linux Client，开启 Socks5 代理模式)\n warp l (安装 WARP Linux Client，开启 WARP 模式)\n warp i (更换支持 Netflix 的IP)\n warp e (安装 Iptables + dnsmasq + ipset 解决方案)\n warp w (安装 WireProxy 解决方案)\n warp y (WireProxy socks5 开关)\n warp k (切换 wireguard 内核 / wireguard-go-reserved)\n warp g (切换 warp 全局 / 非全局)\n warp s 4/6/d (优先级: IPv4 / IPv6 / VPS default)\n"
 E[7]="Install dependence-list:"
 C[7]="安装依赖列表:"
 E[8]="All dependencies already exist and do not need to be installed additionally."
@@ -43,8 +43,8 @@ E[14]="Got the WARP\$TYPE IP successfully"
 C[14]="已成功获取 WARP\$TYPE 网络"
 E[15]="WARP is turned off. It could be turned on again by [warp o]"
 C[15]="已暂停 WARP，再次开启可以用 warp o"
-E[16]="The script specifically adds WARP network interface for VPS, detailed:[https://github.com/fscarmen/warp-sh]\n Features:\n\t • Support WARP+ account. Third-party scripts are use to increase WARP+ quota or upgrade kernel.\n\t • Not only menus, but commands with option.\n\t • Support system: Ubuntu 16.04、18.04、20.04、22.04,Debian 9、10、11,CentOS 7、8、9, Alpine, Arch Linux 3.\n\t • Support architecture: AMD,ARM and s390x\n\t • Automatically select four WireGuard solutions. Performance: Kernel with WireGuard integration > Install kernel module > wireguard-go\n\t • Suppert WARP Linux client.\n\t • Output WARP status, IP region and asn\n"
-C[16]="本项目专为 VPS 添加 warp 网络接口，详细说明: [https://github.com/fscarmen/warp-sh]\n 脚本特点:\n\t • 支持 WARP+ 账户，附带第三方刷 WARP+ 流量和升级内核 BBR 脚本\n\t • 普通用户友好的菜单，进阶者通过后缀选项快速搭建\n\t • 智能判断操作系统: Ubuntu 、Debian 、CentOS、 Alpine 和 Arch Linux，请务必选择 LTS 系统\n\t • 支持硬件结构类型: AMD、 ARM 和 s390x\n\t • 结合 Linux 版本和虚拟化方式，自动优选4个 WireGuard 方案。网络性能方面: 内核集成 WireGuard > 安装内核模块 > wireguard-go\n\t • 支持 WARP Linux Socks5 Client\n\t • 输出执行结果，提示是否使用 WARP IP ，IP 归属地和线路提供商\n"
+E[16]="The script specifically adds WARP network interface for VPS, detailed:[https://github.com/fscarmen/warp-sh]\n Features:\n\t • Support WARP+ account. Third-party scripts is use to upgrade kernel.\n\t • Not only menus, but commands with option.\n\t • Support system: Ubuntu 16.04、18.04、20.04、22.04,Debian 9、10、11,CentOS 7、8、9, Alpine, Arch Linux 3.\n\t • Support architecture: AMD,ARM and s390x\n\t • Automatically select four WireGuard solutions. Performance: Kernel with WireGuard integration > Install kernel module > wireguard-go\n\t • Suppert WARP Linux client.\n\t • Output WARP status, IP region and asn\n"
+C[16]="本项目专为 VPS 添加 warp 网络接口，详细说明: [https://github.com/fscarmen/warp-sh]\n 脚本特点:\n\t • 支持 WARP+ 账户，附带升级内核 BBR 脚本\n\t • 普通用户友好的菜单，进阶者通过后缀选项快速搭建\n\t • 智能判断操作系统: Ubuntu 、Debian 、CentOS、 Alpine 和 Arch Linux，请务必选择 LTS 系统\n\t • 支持硬件结构类型: AMD、 ARM 和 s390x\n\t • 结合 Linux 版本和虚拟化方式，自动优选4个 WireGuard 方案。网络性能方面: 内核集成 WireGuard > 安装内核模块 > wireguard-go\n\t • 支持 WARP Linux Socks5 Client\n\t • 输出执行结果，提示是否使用 WARP IP ，IP 归属地和线路提供商\n"
 E[17]="Version"
 C[17]="脚本版本"
 E[18]="New features"
@@ -115,18 +115,18 @@ E[50]="Choose:"
 C[50]="请选择:"
 E[51]="Please enter the correct number"
 C[51]="请输入正确数字"
-E[52]="Please input WARP+ ID:"
-C[52]="请输入 WARP+ ID:"
-E[53]="WARP+ ID should be 36 characters, please re-enter \(\${i} times remaining\):"
-C[53]="WARP+ ID 应为36位字符，请重新输入 \(剩余\${i}次\):"
-E[54]="Getting the WARP+ quota by the following 3 authors:\n	• [ALIILAPRO]，[https://github.com/ALIILAPRO/warp-plus-cloudflare]\n	• [mixool]，[https://github.com/mixool/across/tree/master/wireguard]\n	• [SoftCreatR]，[https://github.com/SoftCreatR/warp-up]\n • Open the 1.1.1.1 app\n • Click on the hamburger menu button on the top-right corner\n • Navigate to: Account > Key\n Important:Refresh WARP+ quota: 三 --> Advanced --> Connection options --> Reset keys\n It is best to run script with screen."
-C[54]="刷 WARP+ 流量用可选择以下三位作者的成熟作品，请熟知:\n	• [ALIILAPRO]，地址[https://github.com/ALIILAPRO/warp-plus-cloudflare]\n	• [mixool]，地址[https://github.com/mixool/across/tree/master/wireguard]\n	• [SoftCreatR]，地址[https://github.com/SoftCreatR/warp-up]\n 下载地址:https://1.1.1.1/，访问和苹果外区 ID 自理\n 获取 WARP+ ID 填到下面。方法:App右上角菜单 三 --> 高级 --> 诊断 --> ID\n 重要:刷脚本后流量没有增加处理:右上角菜单 三 --> 高级 --> 连接选项 --> 重置加密密钥\n 最好配合 screen 在后台运行任务"
-E[55]="1. Run [ALIILAPRO] script\n 2. Run [mixool] script\n 3. Run [SoftCreatR] script"
-C[55]="1. 运行 [ALIILAPRO] 脚本\n 2. 运行 [mixool] 脚本\n 3. 运行 [SoftCreatR] 脚本"
+E[52]="Fail to establish CloudflareWARP interface. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
+C[52]="创建 CloudflareWARP 网络接口失败，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
+E[53]=""
+C[53]=""
+E[54]=""
+C[54]=""
+E[55]=""
+C[55]=""
 E[56]="The current Netflix region is \$REGION. Confirm press [y] . If you want another regions, please enter the two-digit region abbreviation. \(such as hk,sg. Default is \$REGION\):"
 C[56]="当前 Netflix 地区是:\$REGION，需要解锁当前地区请按 [y], 如需其他地址请输入两位地区简写 \(如 hk ,sg，默认:\$REGION\):"
-E[57]="The target quota you want to get. The unit is GB, the default value is 10:"
-C[57]="你希望获取的目标流量值，单位为 GB，输入数字即可，默认值为10:"
+E[57]=""
+C[57]=""
 E[58]="Local network interface: CloudflareWARP"
 C[58]="本地网络接口: CloudflareWARP"
 E[59]="Cannot find the account file: /etc/wireguard/warp-account.conf, you can reinstall with the WARP+ License"
@@ -159,8 +159,8 @@ E[72]="Turn off, uninstall WARP interface, Linux Client and WireProxy (warp u)"
 C[72]="永久关闭 WARP 网络接口，并删除 WARP、 Linux Client 和 WireProxy (warp u)"
 E[73]="Upgrade kernel, turn on BBR, change Linux system (warp b)"
 C[73]="升级内核、安装BBR、DD脚本 (warp b)"
-E[74]="Getting WARP+ quota by scripts (warp p)"
-C[74]="刷 WARP+ 流量 (warp p)"
+E[74]=""
+C[74]=""
 E[75]="Sync the latest version (warp v)"
 C[75]="同步最新版本 (warp v)"
 E[76]="Exit"
@@ -803,51 +803,6 @@ ip_case() {
 # 帮助说明
 help() { hint " $(text 6) "; }
 
-# 刷 WARP+ 流量
-input() {
-  reading " $(text 52) " ID
-  i=5
-  until [[ "$ID" =~ ^[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}$ ]]; do
-    (( i-- )) || true
-    [ "$i" = 0 ] && error " $(text 29) " || reading " $(text 53) " ID
-  done
-}
-
-plus() {
-  echo -e "\n==============================================================\n"
-  info " $(text 54) "
-  echo -e "\n==============================================================\n"
-  hint " $(text 55) "
-  [ "$OPTION" != p ] && hint " 0. $(text 49) \n" || hint " 0. $(text 76) \n"
-  reading " $(text 50) " CHOOSEPLUS
-  case "$CHOOSEPLUS" in
-    1 )
-      input
-      [ -x "$(type -p git)" ] || ${PACKAGE_INSTALL[int]} git 2>/dev/null
-      [ -x "$(type -p python3)" ] || ${PACKAGE_INSTALL[int]} python3 2>/dev/null
-      [ -d ~/warp-plus-cloudflare ] || ${GH_PROXY}git clone https://github.com/aliilapro/warp-plus-cloudflare.git
-      echo "$ID" | python3 ~/warp-plus-cloudflare/wp-plus.py
-      ;;
-    2 )
-      input
-      reading " $(text 57) " MISSION
-      MISSION=${MISSION//[^0-9]/}
-      bash <(wget --no-check-certificate -qO- -T8 ${GH_PROXY}https://raw.githubusercontent.com/fscarmen/tools/main/warp_plus.sh) $MISSION $ID
-      ;;
-    3 )
-      input
-      reading " $(text 57) " MISSION
-      MISSION=${MISSION//[^0-9]/}
-      bash <(wget --no-check-certificate -qO- -T8 ${GH_PROXY}https://raw.githubusercontent.com/SoftCreatR/warp-up/main/warp-up.sh) --disclaimer --id $ID --iterations $MISSION
-      ;;
-    0 )
-      [ "$OPTION" != p ] && menu || exit
-      ;;
-    * )
-      warning " $(text 51) [0-3] "; sleep 1; plus
-  esac
-}
-
 # IPv4 / IPv6 优先设置
 stack_priority() {
   [ "$OPTION" = s ] && case "$PRIORITY_SWITCH" in
@@ -1235,7 +1190,6 @@ uninstall() {
   rm -f /usr/bin/wg-quick.{origin,reserved}
   rm -f /tmp/{best_mtu,best_endpoint,wireguard-go-*}
   rm -f /etc/wireguard/{wgcf-account.conf,warp-temp.conf,warp-account.conf,warp_unlock.sh,warp.conf.bak,warp.conf,up,proxy.conf.bak,proxy.conf,menu.sh,license,language,info-temp.log,info.log,down,account-temp.conf,NonGlobalUp.sh,NonGlobalDown.sh}
-  [ -s /var/lib/cloudflare-warp/mdm.xml ] && rm -f /var/lib/cloudflare-warp/mdm.xml
   [[ -e /etc/wireguard && -z "$(ls -A /etc/wireguard/)" ]] && rmdir /etc/wireguard
 
   # 选择自动卸载依赖执行以下
@@ -1290,11 +1244,11 @@ net() {
       local NET_4_NONGLOBAL=1
       ip_case 4 warp non-global
     else
-      [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && local NET_4_NONGLOBAL=0 && ip_case 4 warp
+      [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && ping -c2 -W3 162.159.192.1 >/dev/null 2>&1 && local NET_4_NONGLOBAL=0 && ip_case 4 warp
     fi
   else
     [[ "$LAN6" =~ ^[a-f0-9:]{1,}$ ]] && INET6=1 && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && local NET_6_NONGLOBAL=0 && ip_case 6 warp
-    [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && local NET_4_NONGLOBAL=0 && ip_case 4 warp
+    [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.192.1 >/dev/null 2>&1 && local NET_4_NONGLOBAL=0 && ip_case 4 warp
   fi
 
   until [[ "$TRACE4$TRACE6" =~ on|plus ]]; do
@@ -1356,9 +1310,9 @@ client_onoff() {
     info " $(text 91) " && exit 0
   else
     warp-cli --accept-tos connect >/dev/null 2>&1
-    [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 12 || sleep 2
     local CLIENT_MODE=$(warp-cli --accept-tos settings | awk '/Mode:/{for (i=0; i<NF; i++) if ($i=="Mode:") {print $(i+1)}}')
     if [ "$CLIENT_MODE" = 'WarpProxy' ]; then
+      wait_for socks5 >/dev/null 2>&1
       ip_case d client
       local CLIENT_ACCOUNT=$(warp-cli --accept-tos registration show 2>/dev/null | awk  '/type/{print $3}')
       [ "$CLIENT_ACCOUNT" = Limited ] && CLIENT_AC='+' && check_quota client
@@ -1367,6 +1321,7 @@ client_onoff() {
       exit 0
 
     elif [ "$CLIENT_MODE" = 'Warp' ]; then
+      wait_for interface >/dev/null 2>&1
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       local CLIENT_ACCOUNT=$(warp-cli --accept-tos registration show 2>/dev/null | awk  '/type/{print $3}')
@@ -1591,11 +1546,11 @@ EOF
     if grep -q '^AllowedIPs.*0\.\0\/0' 2>/dev/null /etc/wireguard/warp.conf; then
       STACK=-4 && ip_case 4 warp non-global
     else
-      [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && IPV4=1 && STACK=-4 && ip_case 4 warp
+      [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.192.1 >/dev/null 2>&1 && IPV4=1 && STACK=-4 && ip_case 4 warp
     fi
   else
     [[ "$LAN6" != "::1" && "$LAN6" =~ ^[a-f0-9:]+$ ]] && INET6=1 && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && IPV6=1 && STACK=-6 && ip_case 6 warp
-    [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && IPV4=1 && STACK=-4 && ip_case 4 warp
+    [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.192.1 >/dev/null 2>&1 && IPV4=1 && STACK=-4 && ip_case 4 warp
   fi
 
   # 判断当前 WARP 状态，决定变量 PLAN，变量 PLAN 含义:1=单栈  2=双栈  3=WARP已开启
@@ -1815,7 +1770,7 @@ change_port() {
   case "$f" in
     0|1 )
       ${CHANGE_PORT1[f]}
-      sleep 1
+      wait_for $PORT
       ss -nltp | grep -q ":$PORT" && info " $(text 122) " || error " $(text 34) "
       ;;
     2 )
@@ -1823,7 +1778,7 @@ change_port() {
         case "$MODE" in
           [1-2] )
             $(eval echo "\${CHANGE_IP$MODE[f]}")
-            sleep 1
+            wait_for $PORT
             ss -nltp | grep -q ":$PORT" && info " $(text 122) " || error " $(text 34) "
             ;;
           * )
@@ -1949,10 +1904,10 @@ best_mtu() {
   # 反复测试最佳 MTU。 Wireguard Header:IPv4=60 bytes,IPv6=80 bytes，1280 ≤ MTU ≤ 1420。 ping = 8(ICMP回显示请求和回显应答报文格式长度) + 20(IP首部) 。
   # 详细说明:<[WireGuard] Header / MTU sizes for Wireguard>:https://lists.zx2c4.com/pipermail/wireguard/2017-December/002201.html
   MTU=$((1500-28))
-  [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
+  [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
   until [[ $? = 0 || $MTU -le $((1280+80-28)) ]]; do
     MTU=$((MTU-10))
-    [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
+    [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
   done
 
   if [ "$MTU" -eq $((1500-28)) ]; then
@@ -1962,7 +1917,7 @@ best_mtu() {
   else
     for i in {0..8}; do
       (( MTU++ ))
-      ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1 ) || break
+      ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1 ) || break
     done
     (( MTU-- ))
   fi
@@ -1983,8 +1938,8 @@ best_endpoint() {
     rm -f /tmp/{endpoint,ip,endpoint_result}
   fi
 
-  # 如果失败，会有默认值 162.159.193.10:2408 或 [2606:4700:d0::a29f:c001]:2408
-  [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.193.10:2408'}
+  # 如果失败，会有默认值 162.159.192.1:2408 或 [2606:4700:d0::a29f:c001]:2408
+  [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.192.1:2408'}
 
   [ ! -e /tmp/noudp ] && echo "$ENDPOINT" > /tmp/best_endpoint
 }
@@ -2447,10 +2402,38 @@ EOF
   fi
   }
 
+# 等待进程运行结果函数
+wait_for() {
+  local WHAT=$1
+  local TIME_OUT=0
+  local MAX_TIME=30
+  until [ "$TIME_OUT" -gt "$MAX_TIME" ]; do
+    ((TIME_OUT++))
+    case "$WHAT" in
+      interface )
+        grep -q 'CloudflareWARP' <<< "$(ip link show | awk -F': ' '{print $2}')" && echo "OK" && return
+        ;;
+      socks5 )
+        grep -q 'warp-svc' <<< "$(ss -nltp | awk '{print $NF}' | awk -F \" '{print $2}')" && echo "OK" && return
+        ;;
+      [0-9]* )
+        grep -q ":$WHAT" <<< "$(ss -nltp)" && echo "OK" && return
+        ;;
+    esac
+    sleep 1
+  done
+  echo "NO"
+}
+
 client_install() {
   settings() {
     # 如果隧道协议选择是 MASQUE，增加相应文件
-    [ "$TUNNEL_PROTOCOL" = 'is_masque' ] && warp-cli --accept-tos tunnel protocol set MASQUE >/dev/null 2>&1 || warp-cli --accept-tos tunnel protocol set WireGuard >/dev/null 2>&1
+    if [ "$TUNNEL_PROTOCOL" = 'is_masque' ]; then
+      warp-cli --accept-tos tunnel protocol set MASQUE >/dev/null 2>&1
+    else
+      warp-cli --accept-tos tunnel protocol set WireGuard >/dev/null 2>&1
+    fi
+
     # 设置为代理模式，如有 WARP+ 账户，修改 license 并升级
     info " $(text 84) "
     warp-cli --accept-tos registration new >/dev/null 2>&1
@@ -2495,7 +2478,7 @@ client_install() {
       warp-cli --accept-tos tunnel ip add-range ::0/0 >/dev/null 2>&1
       warp-cli --accept-tos mode warp >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
-      [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 12
+      grep -q 'NO' <<< "$(wait_for interface)" && error " $(text 52) "
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       until [[ -n "$CFWARP_WAN4" && -n "$CFWARP_WAN6" ]]; do
@@ -2505,7 +2488,7 @@ client_install() {
         rule_del >/dev/null 2>&1
         sleep 2
         warp-cli --accept-tos connect >/dev/null 2>&1
-        [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ] && sleep 5 || sleep 12
+        grep -q 'NO' <<< "$(wait_for interface)" && error " $(text 52) "
         rule_add >/dev/null 2>&1
         ip_case d is_luban
         if [ "$i" = "$j" ]; then
@@ -2519,8 +2502,7 @@ client_install() {
       warp-cli --accept-tos mode proxy >/dev/null 2>&1
       warp-cli --accept-tos proxy port "$PORT" >/dev/null 2>&1
       warp-cli --accept-tos connect >/dev/null 2>&1
-      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 12 || sleep 2
-      ss -nltp | awk '{print $NF}' | awk -F \" '{print $2}' | grep -q 'warp-svc' && info " $(text 86) " || error " $(text 87) "
+      grep -q 'OK' <<< "$(wait_for socks5)" && info " $(text 86) " || error " $(text 87) "
     fi
   }
 
@@ -2846,7 +2828,7 @@ change_to_plus() {
     local CLIENT_ACCOUNT=$(warp-cli --accept-tos registration show 2>/dev/null | awk '/type/{print $3}')
     unset AC && TYPE=' Free' && [ "$CLIENT_ACCOUNT" = Limited ] && CLIENT_AC='+' && TYPE='+' && check_quota client
     if [ "$CLIENT_MODE" = 'Warp' ]; then
-      [ -s /var/lib/cloudflare-warp/mdm.xml ] && sleep 12
+      grep -q 'NO' <<< "$(wait_for interface)" && error " $(text 52) "
       rule_add >/dev/null 2>&1
       ip_case d is_luban
       [ "$TYPE" = '+' ] && CLIENT_PLUS="$(text 63): $QUOTA"
@@ -3168,7 +3150,7 @@ menu_setting() {
   MENU_OPTION[5]="5.  ${CLIENT_INSTALLED}${CLIENT_NOT_ALLOWED_ARCHITECTURE}$(text 82)"
   MENU_OPTION[6]="6.  $(text 123)"
   MENU_OPTION[7]="7.  $(text 72)"
-  MENU_OPTION[8]="8.  $(text 74)"
+  MENU_OPTION[8]="8.  $(text 78)"
   MENU_OPTION[9]="9.  $(text 73)"
   MENU_OPTION[10]="10. $(text 75)"
   MENU_OPTION[11]="11. $(text 80)"
@@ -3178,7 +3160,7 @@ menu_setting() {
   MENU_OPTION[0]="0.  $(text 76)"
 
   ACTION[4]() { OPTION=o; onoff; }
-  ACTION[5]() { client_install; }; ACTION[6]() { change_ip; }; ACTION[7]() { uninstall; }; ACTION[8]() { plus; }; ACTION[9]() { bbrInstall; }; ACTION[10]() { ver; };
+  ACTION[5]() { client_install; }; ACTION[6]() { change_ip; }; ACTION[7]() { uninstall; }; ACTION[8]() { update; }; ACTION[9]() { bbrInstall; }; ACTION[10]() { ver; };
   ACTION[11]() { bash <(curl -sSL https://gitlab.com/fscarmen/warp_unlock/-/raw/main/unlock.sh) -$L; };
   ACTION[12]() { IS_ANEMONE=is_anemone ;install; };
   ACTION[13]() { IS_PUFFERFFISH=is_pufferffish; install; };
@@ -3243,7 +3225,7 @@ menu() {
   fi
 }
 
-# 传参选项 OPTION: 1=为 IPv4 或者 IPv6 补全另一栈WARP; 2=安装双栈 WARP; u=卸载 WARP; b=升级内核、开启BBR及DD; o=WARP开关；p=刷 WARP+ 流量; 其他或空值=菜单界面
+# 传参选项 OPTION: 1=为 IPv4 或者 IPv6 补全另一栈WARP; 2=安装双栈 WARP; u=卸载 WARP; b=升级内核、开启BBR及DD; o=WARP开关; 其他或空值=菜单界面
 [ "$1" != '[option]' ] && OPTION="${1,,}"
 
 # 参数选项 URL 或 License 或转换 WARP 单双栈
@@ -3271,9 +3253,6 @@ check_operating_system
 case "$OPTION" in
   h )
     help; exit 0
-    ;;
-  p )
-    plus; exit 0
     ;;
   i )
     change_ip; exit 0

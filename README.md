@@ -542,7 +542,7 @@ wget -N https://gitlab.com/fscarmen/warp/-/raw/main/api.sh && bash api.sh [optio
                             "0.0.0.0/0",
                             "::/0"
                         ],
-                        "endpoint":"engage.cloudflareclient.com:2408" // 或填写 162.159.193.10:2408 或 [2606:4700:d0::a29f:c001]:2408
+                        "endpoint":"engage.cloudflareclient.com:2408" // 或填写 162.159.192.1:2408 或 [2606:4700:d0::a29f:c001]:2408
                     }
                 ],
                 "reserved":[78, 135, 76], // 粘贴你的 "reserved" 值

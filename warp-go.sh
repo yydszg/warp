@@ -510,10 +510,10 @@ check_install() {
       # 反复测试最佳 MTU。 Wireguard Header:IPv4=60 bytes,IPv6=80 bytes，1280 ≤ MTU ≤ 1420。 ping = 8(ICMP回显示请求和回显应答报文格式长度) + 20(IP首部) 。
       # 详细说明:<[WireGuard] Header / MTU sizes for Wireguard>:https://lists.zx2c4.com/pipermail/wireguard/2017-December/002201.html
       MTU=$((1500-28))
-      [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
+      [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
       until [[ $? = 0 || $MTU -le $((1280+80-28)) ]]; do
         MTU=$((MTU-10))
-        [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
+        [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
       done
 
       if [ "$MTU" -eq $((1500-28)) ]; then
@@ -523,7 +523,7 @@ check_install() {
       else
         for i in {0..8}; do
           (( MTU++ ))
-          ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1 ) || break
+          ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1 ) || break
         done
         (( MTU-- ))
       fi
@@ -545,8 +545,8 @@ check_install() {
         rm -f /tmp/{endpoint,ip,endpoint_result}
       fi
 
-      # 如果失败，会有默认值 162.159.193.10:2408 或 [2606:4700:d0::a29f:c001]:2408
-      [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.193.10:2408'}
+      # 如果失败，会有默认值 162.159.192.1:2408 或 [2606:4700:d0::a29f:c001]:2408
+      [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.192.1:2408'}
 
       echo "$ENDPOINT" > /tmp/warp-go-endpoint
     }&
@@ -849,7 +849,7 @@ MTU  = 1280
 
 [Peer]
 PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
-Endpoint = 162.159.193.10:1701
+Endpoint = 162.159.192.1:1701
 KeepAlive = 30
 # AllowedIPs = 0.0.0.0/0
 # AllowedIPs = ::/0
@@ -1090,7 +1090,7 @@ EOF
   [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && local INET4=1
   [[ "$LAN6" != "::1" && "$LAN6" =~ ^[a-f0-9:]+$ ]] && local INET6=1
   [ "$INET6" = 1 ] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 $PING_INTERFACE_4 >/dev/null 2>&1 && IPV6=1 && STACK=-6
-  [ "$INET4" = 1 ] && ping -c2 -W3 162.159.193.10 $PING_INTERFACE_6 >/dev/null 2>&1 && IPV4=1 && STACK=-4
+  [ "$INET4" = 1 ] && ping -c2 -W3 162.159.192.1 $PING_INTERFACE_6 >/dev/null 2>&1 && IPV4=1 && STACK=-4
 
   [ "$IPV4" = 1 ] && ip4_info
   [ "$IPV6" = 1 ] && ip6_info
@@ -1101,10 +1101,10 @@ best_mtu() {
   # 反复测试最佳 MTU。 Wireguard Header:IPv4=60 bytes,IPv6=80 bytes，1280 ≤ MTU ≤ 1420。 ping = 8(ICMP回显示请求和回显应答报文格式长度) + 20(IP首部) 。
   # 详细说明:<[WireGuard] Header / MTU sizes for Wireguard>:https://lists.zx2c4.com/pipermail/wireguard/2017-December/002201.html
   MTU=$((1500-28))
-  [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
+  [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
   until [[ $? = 0 || $MTU -le $((1280+80-28)) ]]; do
     MTU=$((MTU-10))
-    [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1
+    [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
   done
 
   if [ "$MTU" -eq $((1500-28)) ]; then
@@ -1114,7 +1114,7 @@ best_mtu() {
   else
     for i in {0..8}; do
       (( MTU++ ))
-      ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.193.10 >/dev/null 2>&1 ) || break
+      ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1 ) || break
     done
     (( MTU-- ))
   fi
@@ -1136,8 +1136,8 @@ best_endpoint() {
     rm -f /tmp/{endpoint,ip,endpoint_result}
   fi
 
-  # 如果失败，会有默认值 162.159.193.10:2408 或 [2606:4700:d0::a29f:c001]:2408
-  [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.193.10:2408'}
+  # 如果失败，会有默认值 162.159.192.1:2408 或 [2606:4700:d0::a29f:c001]:2408
+  [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.192.1:2408'}
 
   echo "$ENDPOINT" > /tmp/warp-go-endpoint
 }
@@ -1353,7 +1353,7 @@ MTU  = 1280
 
 [Peer]
 PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
-Endpoint = 162.159.193.10:1701
+Endpoint = 162.159.192.1:1701
 KeepAlive = 30
 # AllowedIPs = 0.0.0.0/0
 # AllowedIPs = ::/0
@@ -1432,7 +1432,7 @@ EOF
   # 如没有注册成功，脚本退出
   [ ! -s /opt/warp-go/warp.conf ] && error " $(text 104) "
 
-  # warp-go 配置修改，其中用到的 162.159.193.10 和 2606:4700:d0::a29f:c001 均是 engage.cloudflareclient.com 的 IP
+  # warp-go 配置修改，其中用到的 162.159.192.1 和 2606:4700:d0::a29f:c001 均是 engage.cloudflareclient.com 的 IP
   MTU=$(cat /tmp/warp-go-mtu) && rm -f /tmp/warp-go-mtu
   ENDPOINT=$(cat /tmp/warp-go-endpoint) && rm -f /tmp/warp-go-endpoint
   MODIFY014="/Endpoint6/d; /PreUp/d; /::\/0/d; s/162.159.*/$ENDPOINT/g; s#.*AllowedIPs.*#AllowedIPs = 0.0.0.0/0#g; s#.*PostUp.*#PostUp = ip -6 rule add from $LAN6 lookup main#g; s#.*PostDown.*#PostDown = ip -6 rule delete from $LAN6 lookup main\nPostUp = ip -4 rule add from 172.17.0.0\/24 lookup main\nPostDown = ip -4 rule delete from 172.17.0.0\/24 lookup main\n\#PostUp = /opt/warp-go/NonGlobalUp.sh\n\#PostDown = /opt/warp-go/NonGlobalDown.sh#g; s#\(MTU.*\)1280#\1$MTU#g"

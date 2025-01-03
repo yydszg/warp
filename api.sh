@@ -276,7 +276,7 @@ while [[ $# -ge 1 ]]; do
     ;;
   -t | --token)
       shift
-      team_token="$1"
+      TEAM_TOKEN="$1"
       shift
       ;;
   -h | --help)
