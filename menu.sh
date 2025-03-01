@@ -510,9 +510,11 @@ check_dependencies() {
   # 对于 alpine 系统，升级库并重新安装依赖
   if [ "$SYSTEM" = 'Alpine' ]; then
     CHECK_WGET=$(wget 2>&1 | head -n 1)
+    CHECK_PING=$(ping 2>&1 | head -n 1)
     grep -qi 'busybox' <<< "$CHECK_WGET" && ${PACKAGE_INSTALL[int]} wget >/dev/null 2>&1
-    DEPS_CHECK=("ping" "curl" "grep" "bash" "ip" "virt-what")
-    DEPS_INSTALL=("iputils-ping" "curl" "grep" "bash" "iproute2" "virt-what")
+    grep -qi 'busybox' <<< "$CHECK_PING" && ${PACKAGE_INSTALL[int]} iputils-ping >/dev/null 2>&1
+    DEPS_CHECK=("curl" "grep" "bash" "ip" "virt-what")
+    DEPS_INSTALL=("curl" "grep" "bash" "iproute2" "virt-what")
   else
     # 对于三大系统需要的依赖
     DEPS_CHECK=("ping" "wget" "curl" "systemctl" "ip")
