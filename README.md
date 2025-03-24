@@ -20,20 +20,22 @@
 * * *
 
 ## 更新信息
+2025.03.24 menu.sh v3.1.5 1. Client's Warp mode (network interface) has been fixed to deal with the problem that it does not work after reboot; 2. Fixed the regularity of Team IPv6 judgment; 1. Client 的 Warp 模式(网络接口)处理了重启后不工作的问题; 2. 修正 Team IPv6 判断的正则
+
 2024.12.24 menu.sh v3.1.4 / warp-go.sh v1.2.3 Support Docker to externally listen on 0.0.0.0/0 without requiring the use of host network mode. Thanks to Bro @Anthony_Tel; 支持 Docker 在无需使用 host 网络模式的情况下，对外监听 0.0.0.0/0。感谢网友 @Anthony_Tel
 
 2024.9.24 menu.sh v3.1.3 The Linux Client adds the MASQUE protocol option, available in both Proxy mode (menu 5) and WarpProxy mode (menu 14); Linux Client 增加 MASQUE 协议可选项，Proxy 模式（菜单5）和 WarpProxy 模式（菜单14）都可以使用
-
-2024.9.14 menu.sh v3.1.2 / warp-go.sh v1.2.2 1. Remove the function of generating licenses from the previous version because cloning Warp+ licenses is officially prohibited; 2. Remove unnecessary dependencies on python3; 1. 由于官方禁止了克隆 Warp+ license，故去掉上个版本生成 license 的功能; 2. 去掉不必要的依赖 python3
-
-2024.7.25 menu.sh v3.1.1 / warp-go.sh v1.2.1 1. Support using the self-built WARP API at https://warp.cloudflare.now.cc/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime; 1. 支持使用自建 warp api: https://warp.cloudflare.now.cc/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，进一步缩短脚本运行时间
-
-2024.7.18 menu.sh v3.1.0 / warp-go.sh v1.2.0 1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own; 1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置
 
 <details>
     <summary>历史更新 history（点击即可展开或收起）</summary>
 <br>
 
+>2024.9.14 menu.sh v3.1.2 / warp-go.sh v1.2.2 1. Remove the function of generating licenses from the previous version because cloning Warp+ licenses is officially prohibited; 2. Remove unnecessary dependencies on python3; 1. 由于官方禁止了克隆 Warp+ license，故去掉上个版本生成 license 的功能; 2. 去掉不必要的依赖 python3
+>
+>2024.7.25 menu.sh v3.1.1 / warp-go.sh v1.2.1 1. Support using the self-built WARP API at https://warp.cloudflare.now.cc/?run=pluskey to generate a 1920 PB WARP+ license for upgrading to a Plus account; 2. Client lacks sufficient support for WARP+, only able to use IPv4 and not IPv6; 3. Optimize the installer to further reduce script runtime; 1. 支持使用自建 warp api: https://warp.cloudflare.now.cc/?run=pluskey， 生成 1920 PB WARP+ license 升级为 Plus 账户; 2. Client 对 WARP+ 支持不够，只能使用 IPv4，不能使用 IPv6; 3. 优化安装程序，进一步缩短脚本运行时间
+>
+>2024.7.18 menu.sh v3.1.0 / warp-go.sh v1.2.0 1. Use self-built warp api: https://warp.cloudflare.now.cc/ to upgrade to Teams account, no need to prepare Token in advance, only need to enter organization, email and verification code when the script is running to complete, the efficiency is greatly increased; 2. Because the Client's settings need to be set up in the Cloudflare dashboard, which can cause the vps to lose contact if not handled properly, the Client's is not upgraded to a Teams account, and the user can look up the information to set it up on their own; 1. 使用自建 warp api: https://warp.cloudflare.now.cc/ ，升级为 Teams 账户，不需要提前获取 Token，只须在脚本运行的时候输入组织名、邮箱和验证码即可完成，效率大增; 2. 由于 Client 的设置需要到 Cloudflare 控制后台设置，处理不好会导致 vps 失去联系，所以 Client 并没有升级为 Teams 账户的处理，用户可自行查资料设置
+>
 >2024.7.8 menu.sh v3.0.10 / warp-go.sh v1.1.9 1. Publish warp api, you can register account, join Zero Trust, check account information and all other operations. Detailed instructions: https://warp.cloudflare.now.cc/ ; 2. Scripts to update the warp api; 1. 发布 warp api，可以注册账户，加入 Zero Trust，查账户信息等所有的操作。详细使用说明: https://warp.cloudflare.now.cc/; 2. 脚本更新 warp api
 >
 >2024.6.30 menu.sh v3.0.9 1. By multithreading, parallel processing of optimal MTU, optimal endpoint, downloading wireguard-go and installing dependencies, the script runtime is reduced by more than half; 2. Reverse proxy http://ip-api.com/json and https://hits.seeyoufarm.com with cloudflare worker for better dual-stack support and faster fetching; 3. DNS Priority: Cloudflare 1.1.1.1 > Google 8.8.8.8; 1. 通过多线程，并行处理最优 MTU，最优 endpoint，下载 wireguard-go 和安装依赖， 脚本运行时间缩短一半以上; 2. 用 Cloudflare worker 反向代理 http://ip-api.com/json 和 https://hits.seeyoufarm.com，以更好支持双栈及提升获取速度; 3. DNS 优先级: Cloudflare 1.1.1.1 > Google 8.8.8.8

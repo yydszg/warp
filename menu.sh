@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号
-VERSION='3.1.4'
+VERSION='3.1.5'
 
 # 环境变量用于在Debian或Ubuntu操作系统中设置非交互式（noninteractive）安装模式
 export DEBIAN_FRONTEND=noninteractive
@@ -13,8 +13,8 @@ trap "rm -f /tmp/{wireguard-go-*,best_mtu,best_endpoint,endpoint,ip}; exit" INT
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="Support Docker to externally listen on 0.0.0.0/0 without requiring the use of host network mode. Thanks to Bro @Anthony_Tel"
-C[1]="支持 Docker 在无需使用 host 网络模式的情况下，对外监听 0.0.0.0/0。感谢网友 @Anthony_Tel"
+E[1]="1. Client's Warp mode (network interface) has been fixed to deal with the problem that it does not work after reboot; 2. Fixed the regularity of Team IPv6 judgment."
+C[1]="1. Client 的 Warp 模式(网络接口)处理了重启后不工作的问题; 2. 修正 Team IPv6 判断的正则"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -1702,7 +1702,7 @@ input_url_token() {
   fi
 
   [[ "$PRIVATEKEY" =~ ^[A-Z0-9a-z/+]{43}=$ ]] && MATCH[0]=$(text 135) || MATCH[0]=$(text 136)
-  [[ "$ADDRESS6" =~ ^[0-9a-f]{4}(:[0-9a-f]{0,4}){7}$ ]] && MATCH[1]=$(text 135) || MATCH[1]=$(text 136)
+  [[ "$ADDRESS6" =~ ^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$ || "$ADDRESS6" =~ ^(([0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::(([0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?$ ]] && MATCH[1]=$(text 135) || MATCH[1]=$(text 136)
   [[ "$CLIENT_ID" =~ ^\[[0-9]{1,3}(,[[:space:]]*[0-9]{1,3}){2}\]$ ]] && MATCH[2]=$(text 135) || MATCH[2]=$(text 136)
 
   [ "$1" != 'token' ] && TEAMS="{\"private_key\": \"$PRIVATEKEY\", \"v6\": \"$ADDRESS6\", \"client_id\": \"$CLIENT_ID\"}"
@@ -2427,6 +2427,9 @@ wait_for() {
 
 client_install() {
   settings() {
+    # 如果是 Warp 模式，进程守护添加 rule_add 和 rule_del
+    [ "$IS_LUBAN" = 'is_luban' ] && sed -i '/ExecStart=\/bin\/warp-svc/a\ExecStartPost=warp z\nExecStop=warp x' /usr/lib/systemd/system/warp-svc.service && systemctl daemon-reload
+
     # 如果隧道协议选择是 MASQUE，增加相应文件
     if [ "$TUNNEL_PROTOCOL" = 'is_masque' ]; then
       warp-cli --accept-tos tunnel protocol set MASQUE >/dev/null 2>&1
@@ -3253,6 +3256,12 @@ check_operating_system
 case "$OPTION" in
   h )
     help; exit 0
+    ;;
+  z )
+    wait_for interface; rule_add; exit 0
+    ;;
+  x )
+    rule_del; exit 0
     ;;
   i )
     change_ip; exit 0
