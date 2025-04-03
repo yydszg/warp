@@ -259,9 +259,13 @@ check_cdn() {
 
 # 脚本当天及累计运行次数统计
 statistics_of_run-times() {
-  local COUNT=$(curl --retry 2 -ksm2 "https://hit.forvps.gq/https://raw.githubusercontent.com/fscarmen/warp/main/warp-go.sh" 2>&1 | grep -m1 -oE "[0-9]+[ ]+/[ ]+[0-9]+") &&
-  TODAY=$(cut -d " " -f1 <<< "$COUNT") &&
-  TOTAL=$(cut -d " " -f3 <<< "$COUNT")
+  local UPDATE_OR_GET=$1
+  local SCRIPT=$2
+  if grep -q 'update' <<< "$UPDATE_OR_GET"; then
+    { wget -qO- --timeout=3 "https://stat-api.netlify.app/updateStats?script=${SCRIPT}" > /tmp/statistics; }&
+  elif grep -q 'get' <<< "$UPDATE_OR_GET"; then
+    [ -s /tmp/statistics ] && [[ $(cat /tmp/statistics) =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]] && TODAY="${BASH_REMATCH[1]}" && TOTAL="${BASH_REMATCH[2]}" && rm -f /tmp/statistics
+  fi
 }
 
 # 选择语言，先判断 /opt/warp-go/language 里的语言选择，没有的话再让用户选择，默认英语。处理中文显示的问题
@@ -1494,6 +1498,9 @@ EOF
   [ "$ACCOUNT_TYPE" = 'plus' ] && check_quota
   result_priority
 
+  # 获取运行次数
+  statistics_of_run-times get
+
   echo -e "\n==============================================================\n"
   info " IPv4: $WAN4 $COUNTRY4  $ASNORG4 "
   info " IPv6: $WAN6 $COUNTRY6  $ASNORG6 "
@@ -1627,7 +1634,7 @@ NAME="$3"
 
 # 主程序运行 1/3
 check_cdn
-statistics_of_run-times
+statistics_of_run-times update warp-go.sh
 select_language
 check_operating_system
 check_arch

@@ -423,9 +423,14 @@ check_cdn() {
 
 # 脚本当天及累计运行次数统计
 statistics_of_run-times() {
-  local COUNT=$(curl --retry 2 -ksm2 "https://hit.forvps.gq/https://cdn.jsdelivr.net/gh/fscarmen/warp/menu.sh" 2>&1 | grep -m1 -oE "[0-9]+[ ]+/[ ]+[0-9]+") &&
-  TODAY=$(awk -F ' ' '{print $1}' <<< "$COUNT") &&
-  TOTAL=$(awk -F ' ' '{print $3}' <<< "$COUNT")
+  local UPDATE_OR_GET=$1
+  local SCRIPT=$2
+  if grep -q 'update' <<< "$UPDATE_OR_GET"; then
+    { wget -qO- --timeout=3 "https://stat-api.netlify.app/updateStats?script=${SCRIPT}" > /tmp/statistics; }&
+  elif grep -q 'get' <<< "$UPDATE_OR_GET"; then
+    [ -s /tmp/statistics ] && [[ $(cat /tmp/statistics) =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]] && local TODAY="${BASH_REMATCH[1]}" && local TOTAL="${BASH_REMATCH[2]}" && rm -f /tmp/statistics
+    info " $(text 41) "
+  fi
 }
 
 # 选择语言，先判断 /etc/wireguard/language 里的语言选择，没有的话再让用户选择，默认英语。处理中文显示的问题
@@ -2394,7 +2399,8 @@ EOF
     echo -e "\n==============================================================\n"
     info " IPv4: $WAN4 $COUNTRY4  $ASNORG4 "
     info " IPv6: $WAN6 $COUNTRY6  $ASNORG6 "
-    info " $(text 41) " && [ -n "$QUOTA" ] && info " $(text 133) "
+    statistics_of_run-times get
+    [ -n "$QUOTA" ] && info " $(text 133) "
     info " $PRIORITY_NOW , $(text 186) "
     echo -e "\n==============================================================\n"
     hint " $(text 43) \n" && help
@@ -3248,7 +3254,7 @@ NAME=$3
 # 主程序运行 1/3
 
 check_cdn
-statistics_of_run-times
+statistics_of_run-times update menu.sh
 select_language
 check_operating_system
 

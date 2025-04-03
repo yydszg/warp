@@ -610,7 +610,7 @@ wget -N https://gitlab.com/fscarmen/warp/-/raw/main/api.sh && bash api.sh [optio
 
 ## WARP Teams 获取并用于 Linux 的方法
 
-* https://token.warpapi.us.kg/ , 通过 fscarmen 的网站
+* https://warp-token.cloudflare.now.cc/ , 通过 fscarmen 的网站
 
 * https://web--public--warp-team-api--coia-mfs4.code.run/, 通过 Coia 的网站
 
@@ -665,7 +665,7 @@ https://github.com/acacia233/Project-WARP-Unlock
 
 服务提供（排名不分先后）:
 * fscarmen 的 Warp API: https://warp.cloudflare.now.cc/
-* fscarmen 的 Zero Trust Token API: https://token.warpapi.us.kg/
+* fscarmen 的 Zero Trust Token API: https://warp-token.cloudflare.now.cc/
 * CloudFlare Warp(+): https://1.1.1.1/
 * WGCF 项目原作者: https://github.com/ViRb3/wgcf/
 * Coia 和 warp-go 团队: https://gitlab.com/ProjectWARP/warp-go
