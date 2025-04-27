@@ -1302,7 +1302,7 @@ net() {
 # WARP 开关，先检查是否已安装，再根据当前状态转向相反状态
 onoff() {
   [ ! -x "$(type -p wg-quick)" ] && error " $(text 155) "
-  [ -n "$(wg 2>/dev/null)" ] && (wg-quick down warp >/dev/null 2>&1; info " $(text 15) ") || net
+  wg show warp >/dev/null 2>&1 && (wg-quick down warp >/dev/null 2>&1; info " $(text 15) ") || net
 }
 
 # Client 开关，先检查是否已安装，再根据当前状态转向相反状态
@@ -3151,7 +3151,7 @@ menu_setting() {
   fi
 
   [ -e /etc/dnsmasq.d/warp.conf ] && IPTABLE_INSTALLED="$(text 92)"
-  [ -n "$(wg 2>/dev/null)" ] && MENU_OPTION[4]="4.  $(text 77)" || MENU_OPTION[4]="4.  $(text 71)"
+  wg show warp >/dev/null 2>&1 && MENU_OPTION[4]="4.  $(text 77)" || MENU_OPTION[4]="4.  $(text 71)"
   if [ -e /etc/wireguard/warp.conf ]; then
     grep -q '#Table' /etc/wireguard/warp.conf && GLOBAL_OR_NOT="$(text 184)" || GLOBAL_OR_NOT="$(text 185)"
   fi
