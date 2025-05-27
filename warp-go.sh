@@ -564,7 +564,7 @@ ip4_info() {
   [ "$L" = 'C' ] && IS_CHINESE=${IS_CHINESE:-'?lang=zh-CN'}
   TRACE4=$(curl --retry 2 -ks4m5 https://www.cloudflare.com/cdn-cgi/trace $INTERFACE_4 | awk -F '=' '/^warp=/{print $NF}')
   if [ -n "$TRACE4" ]; then
-    [ "$IS_UNINSTALL" = 'is_uninstall' ] && WAN4=$(curl -4 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || WAN4=$(curl --retry 2 -ks4m5 -A Mozilla https://api-ipv4.ip.sb/geoip $INTERFACE_4 | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
+    [ "$IS_UNINSTALL" = 'is_uninstall' ] && WAN4=$(curl -4 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || WAN4=$(curl --retry 2 -ks4m5 -A Mozilla https://ipinfo.io/ip $INTERFACE_4)
     [[ -n "$WAN4" && ! "$WAN4" =~ error[[:space:]]+code:[[:space:]]+1015 ]] && IP4_JSON=$(curl --retry 2 -ksm5 --user-agent Mozilla https://ip.forvps.gq/${WAN4}${IS_CHINESE}) || unset WAN4
     IP4_JSON=${IP4_JSON:-"$(curl --retry 2 -ks4m3 --user-agent Mozilla https://ifconfig.co/json $INTERFACE_4)"}
     if [ -n "$IP4_JSON" ]; then

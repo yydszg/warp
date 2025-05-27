@@ -640,7 +640,7 @@ ip_info() {
   local IS_UNINSTALL="$3"
 
   [ "$L" = 'C' ] && IS_CHINESE=${IS_CHINESE:-'?lang=zh-CN'}
-  [ "$CHECK_46" = '6' ] && CHOOSE_IP_API='https://api-ipv6.ip.sb/geoip' || CHOOSE_IP_API='https://api-ipv4.ip.sb/geoip'
+  [ "$CHECK_46" = '6' ] && CHOOSE_IP_API='https://api-ipv6.ip.sb/geoip' || CHOOSE_IP_API='https://ipinfo.io/ip'
   IP_TRACE=$(curl --retry 2 -ksm5 $INTERFACE_SOCK5 https://www.cloudflare.com/cdn-cgi/trace | awk -F '=' '/^warp=/{print $NF}')
   if [ -n "$IP_TRACE" ]; then
     [ "$IS_UNINSTALL" = 'is_uninstall' ] && local API_IP=$(curl -$CHECK_46 --retry 2 -ksm5 --user-agent Mozilla https://api.ip.sb/ip) || local API_IP=$(curl --retry 2 -ksm5 $INTERFACE_SOCK5 --user-agent Mozilla $CHOOSE_IP_API | sed 's/.*"ip":"\([^"]\+\)".*/\1/')
