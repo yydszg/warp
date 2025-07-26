@@ -77,8 +77,8 @@ E[31]="The new \$KEY_LICENSE is the same as the one currently in use. Does not n
 C[31]="新输入的 \$KEY_LICENSE 与现使用中的一样，不需要更换。"
 E[32]="Step 1/3: Install dependencies..."
 C[32]="进度 1/3: 安装系统依赖……"
-E[33]="Step 2/3: WARP is ready"
-C[33]="进度 2/3: 已安装 WARP"
+E[33]="Step 2/3: WARP configuration file has been processed"
+C[33]="进度 2/3: 已处理好 WARP 配置文件"
 E[34]="Failed to change port. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[34]="更换端口不成功，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[35]="Update WARP+ account..."
@@ -2222,7 +2222,13 @@ EOF
   # 修改配置文件
   sed -i "$(eval echo "\$MODIFY$CONF")" /etc/wireguard/warp.conf
   [ -e /tmp/best_mtu ] && MTU=$(cat /tmp/best_mtu) && rm -f /tmp/best_mtu && sed -i "s/MTU.*/MTU = $MTU/g" /etc/wireguard/warp.conf
-  [ -e /tmp/best_endpoint ] && ENDPOINT=$(cat /tmp/best_endpoint) && rm -f /tmp/best_endpoint && sed -i "s/engage.*/$ENDPOINT/g" /etc/wireguard/warp.conf
+  # 处理 Hax US2 / US3 机器只能使用 [500, 1701, 2408, 4500] 端口的问题，通过 ASN 判断
+  if grep -qi 'FiberState' <<< "$ASNORG6"; then
+    rm -f /tmp/best_endpoint
+    sed -i "s/engage.*/engage.cloudflareclient.com:4500/g" /etc/wireguard/warp.conf
+  else
+    [ -e /tmp/best_endpoint ] && local ENDPOINT=$(cat /tmp/best_endpoint) && rm -f /tmp/best_endpoint && sed -i "s/engage.*/$ENDPOINT/g" /etc/wireguard/warp.conf
+  fi
   [ "$GLOBAL_OR_NOT" = "$(text 185)" ] && sed -i "/Table/s/#//g;/NonGlobal/s/#//g" /etc/wireguard/warp.conf
   info "\n $(text 81) \n"
 

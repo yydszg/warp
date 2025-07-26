@@ -141,15 +141,15 @@ Synchronize applications:
       git push --no-follow-tags --force --prune mirror "refs/remotes/origin/*:refs/heads/*"
       git remote remove mirror
 
-Mirror to Bitbucket:
-
-  variables:
-    GIT_USER_NAME: $GITLAB_USER_NAME
-    GIT_SSH_COMMAND: "ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l $GIT_USER_NAME"
-    GIT_REPO: Bitbucket
-    TARGET_REPO_URL: git@bitbucket.org:$CI_PROJECT_PATH.git
-
-  <<: *mirror_script
+# Mirror to Bitbucket:
+# 
+#   variables:
+#     GIT_USER_NAME: $GITLAB_USER_NAME
+#     GIT_SSH_COMMAND: "ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -l $GIT_USER_NAME"
+#     GIT_REPO: Bitbucket
+#     TARGET_REPO_URL: git@bitbucket.org:$CI_PROJECT_PATH.git
+# 
+#   <<: *mirror_script
 
 # Mirror to Gitlab group:
 #   stage: Mirror to others git repositories
