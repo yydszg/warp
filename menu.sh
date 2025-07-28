@@ -9,7 +9,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Github 反代加速代理
 GH_PROXY='https://ghproxy.lvedong.eu.org/'
 
-trap "rm -f /tmp/{wireguard-go-*,best_mtu,best_endpoint,endpoint,ip}; exit" INT
+trap cleanup_resources EXIT INT TERM
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
@@ -416,6 +416,11 @@ hint() { echo -e "\033[33m\033[01m$*\033[0m"; }   # 黄色
 reading() { read -rp "$(info "$1")" "$2"; }
 text() { grep -q '\$' <<< "${E[$*]}" && eval echo "\$(eval echo "\${${L}[$*]}")" || eval echo "\${${L}[$*]}"; }
 
+# 清理函数
+cleanup_resources() {
+  rm -f /tmp/{endpoint,ip,endpoint_result,wireguard-go-*,best_mtu,best_endpoint,noudp} 2>/dev/null; exit 0
+}
+
 # 检测是否需要启用 Github CDN，如能直接连通，则不使用
 check_cdn() {
   [ -n "$GH_PROXY" ] && wget --server-response --quiet --output-document=/dev/null --no-check-certificate --tries=2 --timeout=3 https://raw.githubusercontent.com/fscarmen/warp-sh/main/README.md >/dev/null 2>&1 && unset GH_PROXY
@@ -426,7 +431,7 @@ statistics_of_run-times() {
   local UPDATE_OR_GET=$1
   local SCRIPT=$2
   if grep -q 'update' <<< "$UPDATE_OR_GET"; then
-    { wget --no-check-certificate -qO- --timeout=3 "http://stat.cloudflare.now.cc:4000/api/updateStats?script=${SCRIPT}" > /tmp/statistics; }&
+    { wget --no-check-certificate -qO- --timeout=3 "https://stat.cloudflare.now.cc/api/updateStats?script=${SCRIPT}" > /tmp/statistics; }&
   elif grep -q 'get' <<< "$UPDATE_OR_GET"; then
     [ -s /tmp/statistics ] && [[ $(cat /tmp/statistics) =~ \"todayCount\":([0-9]+),\"totalCount\":([0-9]+) ]] && local TODAY="${BASH_REMATCH[1]}" && local TOTAL="${BASH_REMATCH[2]}" && rm -f /tmp/statistics
     info " $(text 41) "
@@ -1908,27 +1913,50 @@ EOF
 best_mtu() {
   # 反复测试最佳 MTU。 Wireguard Header:IPv4=60 bytes,IPv6=80 bytes，1280 ≤ MTU ≤ 1420。 ping = 8(ICMP回显示请求和回显应答报文格式长度) + 20(IP首部) 。
   # 详细说明:<[WireGuard] Header / MTU sizes for Wireguard>:https://lists.zx2c4.com/pipermail/wireguard/2017-December/002201.html
-  MTU=$((1500-28))
-  [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
-  until [[ $? = 0 || $MTU -le $((1280+80-28)) ]]; do
-    MTU=$((MTU-10))
-    [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1
-  done
+  # MTU 初始范围（适用于 WireGuard 等封装，IPv4/IPv6 都保守选 1280-1420）
+  local MIN_MTU=1280
+  local MAX_MTU=1500
+  local TEST_IP
+  local PING_CMD
+  local BEST_MTU=1280
 
-  if [ "$MTU" -eq $((1500-28)) ]; then
-    MTU=$MTU
-  elif [ "$MTU" -le $((1280+80-28)) ]; then
-    MTU=$((1280+80-28))
+  if [ "$IPV4$IPV6" = "01" ]; then
+    TEST_IP="2606:4700:d0::a29f:c001"
+    PING_CMD="$PING6"
   else
-    for i in {0..8}; do
-      (( MTU++ ))
-      ( [ "$IPV4$IPV6" = 01 ] && $PING6 -c1 -W1 -s $MTU -Mdo 2606:4700:d0::a29f:c001 >/dev/null 2>&1 || ping -c1 -W1 -s $MTU -Mdo 162.159.192.1 >/dev/null 2>&1 ) || break
-    done
-    (( MTU-- ))
+    TEST_IP="162.159.192.1"
+    PING_CMD="ping"
   fi
 
-  MTU=$((MTU+28-80))
-  echo "$MTU" > /tmp/best_mtu
+  # 二分查找能 ping 通的最大 MTU（不碎片）
+  while [ $((MIN_MTU <= MAX_MTU)) -eq 1 ]; do
+    local MID_MTU=$(( (MIN_MTU + MAX_MTU) / 2 ))
+    if $PING_CMD -c1 -W1 -s $MID_MTU -M do "$TEST_IP" >/dev/null 2>&1; then
+      BEST_MTU=$MID_MTU
+      MIN_MTU=$((MID_MTU + 1))  # 尝试更大值
+    else
+      MAX_MTU=$((MID_MTU - 1))  # 减小范围
+    fi
+  done
+
+  # 最终微调确认 BEST_MTU 是最大可用值
+  for (( i=BEST_MTU+1; i<=1420; i++ )); do
+    if $PING_CMD -c1 -W1 -s $i -M do "$TEST_IP" >/dev/null 2>&1; then
+      BEST_MTU=$i
+    else
+      break
+    fi
+  done
+
+  # 返回最终 MTU（按需减包头）——可自定义减多少
+  # WireGuard：+28 是 IP+UDP，-60 / -80 是安全包头（例如 wireguard + extra overhead）
+  grep -q ':' <<< "$TEST_IP" && BEST_MTU=$((BEST_MTU + 28 - 80)) || BEST_MTU=$((BEST_MTU + 28 - 60))
+
+  # 确保范围安全
+  [ "$BEST_MTU" -lt 1280 ] && BEST_MTU=1280
+  [ "$BEST_MTU" -gt 1420 ] && BEST_MTU=1420
+
+  echo "$BEST_MTU" > /tmp/best_mtu
 }
 
 # 寻找最佳 Endpoint，根据 v4 / v6 情况下载 endpoint 库
