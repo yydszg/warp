@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号
-VERSION='3.1.5'
+VERSION='3.1.6'
 
 # 环境变量用于在Debian或Ubuntu操作系统中设置非交互式（noninteractive）安装模式
 export DEBIAN_FRONTEND=noninteractive
@@ -13,8 +13,8 @@ trap cleanup_resources EXIT INT TERM
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="1. Client's Warp mode (network interface) has been fixed to deal with the problem that it does not work after reboot; 2. Fixed the regularity of Team IPv6 judgment."
-C[1]="1. Client 的 Warp 模式(网络接口)处理了重启后不工作的问题; 2. 修正 Team IPv6 判断的正则"
+E[1]="Remove best endpoint feature to adapt to official adjustments"
+C[1]="删除最优 Endpoint 功能以适应官方调整"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -173,8 +173,8 @@ E[79]="Do you uninstall the following dependencies \(if any\)? Please note that 
 C[79]="是否卸载以下依赖\(如有\)？请注意，这将有可能使其他正在使用该依赖的程序不能正常工作\\\n\\\n \$UNINSTALL_DEPENDENCIES_LIST"
 E[80]="Professional one-click script for WARP to unblock streaming media (Supports multi-platform, multi-mode and TG push)"
 C[80]="WARP 解锁 Netflix 等流媒体专业一键(支持多平台、多方式和 TG 通知)"
-E[81]="Step 3/3: Searching for the best MTU value and endpoint address are ready."
-C[81]="进度 3/3: 寻找 MTU 最优值和优选 endpoint 地址已完成"
+E[81]="Step 3/3: Searching for the best MTU value is ready."
+C[81]="进度 3/3: 寻找 MTU 最优值已完成"
 E[82]="Install CloudFlare Client and set mode to Proxy (bash menu.sh c)"
 C[82]="安装 CloudFlare Client 并设置为 Proxy 模式 (bash menu.sh c)"
 E[83]="Step 1/3: Installing WARP Client..."
@@ -387,8 +387,8 @@ E[186]="Working mode: \$GLOBAL_OR_NOT"
 C[186]="工作模式: \$GLOBAL_OR_NOT"
 E[187]="Failed to change to \$ACCOUNT_CHANGE_FAILED account, automatically switch back to the original account."
 C[187]="更换到 \$ACCOUNT_CHANGE_FAILED 账户失败，自动切换回原来的账户"
-E[188]="All endpoints of WARP cannot be connected. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
-C[188]="WARP 的所有的 endpoint 均不能连通，有可能 UDP 被限制了，可联系供应商了解如何开启，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
+E[188]=""
+C[188]=""
 E[189]="Cannot detect any IPv4 or IPv6. The script is aborted. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[189]="检测不到任何 IPv4 或 IPv6。脚本中止，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
 E[190]="The configuration file warp.conf cannot be found. The script is aborted. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
@@ -418,7 +418,7 @@ text() { grep -q '\$' <<< "${E[$*]}" && eval echo "\$(eval echo "\${${L}[$*]}")"
 
 # 清理函数
 cleanup_resources() {
-  rm -f /tmp/{endpoint,ip,endpoint_result,wireguard-go-*,best_mtu,best_endpoint,noudp} 2>/dev/null; exit 0
+  rm -f /tmp/{ip,wireguard-go-*,best_mtu,statistics} 2>/dev/null; exit 0
 }
 
 # 检测是否需要启用 Github CDN，如能直接连通，则不使用
@@ -1198,7 +1198,7 @@ uninstall() {
 
   # 删除本脚本安装在 /etc/wireguard/ 下的所有文件，如果删除后目录为空，一并把目录删除
   rm -f /usr/bin/wg-quick.{origin,reserved}
-  rm -f /tmp/{best_mtu,best_endpoint,wireguard-go-*}
+  rm -f /tmp/{best_mtu,wireguard-go-*}
   rm -f /etc/wireguard/{wgcf-account.conf,warp-temp.conf,warp-account.conf,warp_unlock.sh,warp.conf.bak,warp.conf,up,proxy.conf.bak,proxy.conf,menu.sh,license,language,info-temp.log,info.log,down,account-temp.conf,NonGlobalUp.sh,NonGlobalDown.sh}
   [[ -e /etc/wireguard && -z "$(ls -A /etc/wireguard/)" ]] && rmdir /etc/wireguard
 
@@ -1961,20 +1961,9 @@ best_mtu() {
 
 # 寻找最佳 Endpoint，根据 v4 / v6 情况下载 endpoint 库
 best_endpoint() {
-  wget $STACK -qO /tmp/endpoint https://gitlab.com/fscarmen/warp/-/raw/main/endpoint/warp-linux-"$ARCHITECTURE" && chmod +x /tmp/endpoint
-  [ "$IPV4$IPV6" = 01 ] && wget $STACK -qO /tmp/ip https://gitlab.com/fscarmen/warp/-/raw/main/endpoint/ipv6 || wget $STACK -qO /tmp/ip https://gitlab.com/fscarmen/warp/-/raw/main/endpoint/ipv4
-
-  if [[ -e /tmp/endpoint && -e /tmp/ip ]]; then
-    /tmp/endpoint -file /tmp/ip -output /tmp/endpoint_result >/dev/null 2>&1
-    # 如果全部是数据包丢失，LOSS = 100%，说明 UDP 被禁止，生成标志 /tmp/noudp
-    [ "$(grep -sE '[0-9]+[ ]+ms$' /tmp/endpoint_result | awk -F, 'NR==1 {print $2}')" = '100.00%' ] && touch /tmp/noudp || ENDPOINT=$(grep -sE '[0-9]+[ ]+ms$' /tmp/endpoint_result | awk -F, 'NR==1 {print $1}')
-    rm -f /tmp/{endpoint,ip,endpoint_result}
-  fi
-
-  # 如果失败，会有默认值 162.159.192.1:2408 或 [2606:4700:d0::a29f:c001]:2408
-  [ "$IPV4$IPV6" = 01 ] && ENDPOINT=${ENDPOINT:-'[2606:4700:d0::a29f:c001]:2408'} || ENDPOINT=${ENDPOINT:-'162.159.192.1:2408'}
-
-  [ ! -e /tmp/noudp ] && echo "$ENDPOINT" > /tmp/best_endpoint
+  # Removed best endpoint feature to adapt to official adjustments
+  # Use default endpoint: engage.cloudflareclient.com:2408
+  echo "engage.cloudflareclient.com:2408" > /tmp/best_endpoint
 }
 
 # WARP 或 WireProxy 安装
@@ -2226,13 +2215,6 @@ EOF
 
   wait
 
-  # 如有所有 endpoint 都不能连通的情况，脚本中止
-  if [ -e /tmp/noudp ]; then
-    rm -f /tmp/{noudp,best_mtu,best_endpoint} /usr/bin/wireguard-go /etc/wireguard/{wgcf-account.conf,warp-temp.conf,warp-account.conf,warp_unlock.sh,warp.conf.bak,warp.conf,up,proxy.conf.bak,proxy.conf,menu.sh,license,language,info-temp.log,info.log,down,account-temp.conf,NonGlobalUp.sh,NonGlobalDown.sh}
-    [[ -e /etc/wireguard && -z "$(ls -A /etc/wireguard/)" ]] && rmdir /etc/wireguard
-    error "\n $(text 188) \n"
-  fi
-
   # WARP 配置修改，172.17.0.0/24 这段是用于 Docker 的
   MODIFY014="s/\(DNS[ ]\+=[ ]\+\).*/\12606:4700:4700::1111,2001:4860:4860::8888,2001:4860:4860::8844,1.1.1.1,8.8.8.8,8.8.4.4/g;7 s/^/PostUp = ip -6 rule add from $LAN6 lookup main\nPostDown = ip -6 rule delete from $LAN6 lookup main\nPostUp = ip -4 rule add from 172.17.0.0\/24 lookup main\nPostDown = ip -4 rule delete from 172.17.0.0\/24 lookup main\n\n/;s/^.*\:\:\/0/#&/g;\$a\PersistentKeepalive = 30"
   MODIFY016="s/\(DNS[ ]\+=[ ]\+\).*/\12606:4700:4700::1111,2001:4860:4860::8888,2001:4860:4860::8844,1.1.1.1,8.8.8.8,8.8.4.4/g;7 s/^/PostUp = ip -6 rule add from $LAN6 lookup main\nPostDown = ip -6 rule delete from $LAN6 lookup main\nPostUp = ip -4 rule add from 172.17.0.0\/24 lookup main\nPostDown = ip -4 rule delete from 172.17.0.0\/24 lookup main\n\n/;s/^.*0\.\0\/0/#&/g;\$a\PersistentKeepalive = 30"
@@ -2250,13 +2232,8 @@ EOF
   # 修改配置文件
   sed -i "$(eval echo "\$MODIFY$CONF")" /etc/wireguard/warp.conf
   [ -e /tmp/best_mtu ] && MTU=$(cat /tmp/best_mtu) && rm -f /tmp/best_mtu && sed -i "s/MTU.*/MTU = $MTU/g" /etc/wireguard/warp.conf
-  # 处理 Hax US2 / US3 机器只能使用 [500, 1701, 2408, 4500] 端口的问题，通过 ASN 判断
-  if grep -qi 'FiberState' <<< "$ASNORG6"; then
-    rm -f /tmp/best_endpoint
-    sed -i "s/engage.*/engage.cloudflareclient.com:4500/g" /etc/wireguard/warp.conf
-  else
-    [ -e /tmp/best_endpoint ] && local ENDPOINT=$(cat /tmp/best_endpoint) && rm -f /tmp/best_endpoint && sed -i "s/engage.*/$ENDPOINT/g" /etc/wireguard/warp.conf
-  fi
+
+  # 根据选择，处理 warp 是否全局代理
   [ "$GLOBAL_OR_NOT" = "$(text 185)" ] && sed -i "/Table/s/#//g;/NonGlobal/s/#//g" /etc/wireguard/warp.conf
   info "\n $(text 81) \n"
 
@@ -2498,17 +2475,6 @@ client_install() {
     fi
 
     wait
-    [ -e /tmp/noudp ] && rm -f /tmp/noudp && error "\n $(text 188) \n"
-
-    # 在 WireGuard 协议下，根据优选出来的 endpoint 设置
-    if [ -e /tmp/best_endpoint ]; then
-      if [ "$TUNNEL_PROTOCOL" = 'is_wireguard' ]; then
-        ENDPOINT=$(cat /tmp/best_endpoint)
-        warp-cli --accept-tos tunnel endpoint set $ENDPOINT >/dev/null 2>&1
-        [ "$(warp-cli --accept-tos settings | awk '/WARP endpoint/{print $NF}')" = "$ENDPOINT" ] && info "\n $(text 81) \n"
-      fi
-      rm -f /tmp/best_endpoint
-    fi
 
     # 关闭隧道 qlog logging
     warp-cli --accept-tos debug qlog disable >/dev/null 2>&1
@@ -3342,14 +3308,9 @@ check_dependencies
 check_virt $SYSTEM
 check_system_info
 
-# 提前准备最佳 MTU 和优选 Endpoint
-if [[ ${CLIENT} = 0 && ${WIREPROXY} = 0 && ! -s /etc/wireguard/warp.conf ]]; then
-  # 后台优选最佳 MTU
-  { best_mtu; }&
+# 提前准备最佳 MTU
+[[ ${CLIENT} = 0 && ${WIREPROXY} = 0 && ! -s /etc/wireguard/warp.conf ]] && { best_mtu; }&
 
-  # 后台优选优选 WARP Endpoint
-  { best_endpoint; }&
-fi
 menu_setting
 
 # 设置部分后缀 3/3
