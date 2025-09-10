@@ -22,6 +22,8 @@ English | [中文](README.md)
 * * *
 
 ## Update Information
+2025.09.10 menu.sh v3.1.8 Enhance the script's compatibility with Arch Linux and EndeavourOS systems.
+
 2025.08.24 menu.sh v3.1.7 1. Added support for installing Warp on Ubuntu 24.04 and later versions. Thanks to the solution provided by community member [Michaol]; 2. Added support for Client installation on Debian 13. Thanks to the feedback from user [ainp]
 
 2025.08.11 menu.sh v3.1.6 / warp-go.sh v1.2.4 Remove best endpoint feature to adapt to official adjustments;
@@ -607,16 +609,19 @@ Its connection entry is dual-stack (both IPv4/IPv6 are available), and after con
 * Add IPv4 to IPv6-only servers
 
 As shown in the figure, IPv4 traffic is taken over by the WARP network card, realizing that IPv4 traffic accesses the external network through WARP.
+
 <img src="https://user-images.githubusercontent.com/62703343/135735404-1389d022-e5c5-4eb8-9655-f9f065e3c92e.png" width="70%" />
 
 * Add IPv6 to IPv4-only servers
 
 As shown in the figure, IPv6 traffic is taken over by the WARP network card, realizing that IPv6 traffic accesses the external network through WARP.
+
 <img src="https://user-images.githubusercontent.com/62703343/135735414-01321b0b-887e-43d6-ad68-a74db20cfe84.png" width="70%" />
 
 * Network replacement for dual-stack servers
 
 Sometimes our server itself is dual-stack, but for various reasons we may not want to use one of the networks. In this case, we can also use WARP to take over part of the network connection to hide our IP address. The purpose of doing this, the biggest significance is to reduce the probability of verification codes appearing in some severely abused data centers; at the same time, some content providers treat WARP's landing IP as the native IP of real users, which can lift some IP-based blockades.
+
 <img src="https://user-images.githubusercontent.com/62703343/135735419-50805ed6-20ea-4440-93b4-5bcc6f2aca9b.png" width="70%" />
 
 * Network performance: Kernel integrated > Kernel module > wireguard-go

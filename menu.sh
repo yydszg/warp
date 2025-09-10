@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 当前脚本版本号
-VERSION='3.1.7'
+VERSION='3.1.8'
 
 # 环境变量用于在Debian或Ubuntu操作系统中设置非交互式（noninteractive）安装模式
 export DEBIAN_FRONTEND=noninteractive
@@ -13,7 +13,7 @@ trap cleanup_resources EXIT INT TERM
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文"
 C[0]="${E[0]}"
-E[1]="1. Added support for installing Warp on Ubuntu 24.04 and later versions. Thanks to the solution provided by community member [Michaol]; 2. Added support for Client installation on Debian 13. Thanks to the feedback from user [ainp]."
+E[1]="Enhance the script's compatibility with Arch Linux and EndeavourOS systems; 增强脚本对 Arch Linux 及 EndeavourOS 系统的兼容性"
 C[1]="1. 适配 Ubuntu 24.04 及以上版本安装 Warp，感谢网友 [Michaol] 提供的解决方案; 2. 适配 Debian 13 安装 Client，感谢用户 [ainp] 的反馈"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp-sh/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp-sh/issues]"
@@ -487,7 +487,7 @@ check_operating_system() {
   alpine_warp_restart() { wg-quick down warp >/dev/null 2>&1; wg-quick up warp >/dev/null 2>&1; }
   alpine_warp_enable() { echo -e "/usr/bin/tun.sh\nwg-quick up warp" > /etc/local.d/warp.start; chmod +x /etc/local.d/warp.start; rc-update add local; wg-quick up warp >/dev/null 2>&1; }
 
-  REGEX=("debian" "ubuntu" "centos|red hat|kernel|alma|rocky" "alpine" "arch linux" "fedora")
+  REGEX=("debian" "ubuntu" "centos|red hat|kernel|alma|rocky" "alpine" "arch linux|endeavouros" "fedora")
   RELEASE=("Debian" "Ubuntu" "CentOS" "Alpine" "Arch" "Fedora")
   EXCLUDE=("---")
   MAJOR=("9" "16" "7" "" "" "37")
@@ -1176,7 +1176,7 @@ uninstall() {
 
   # 根据已安装情况执行卸载任务并显示结果
   [[ "$SYSTEM" = 'Ubuntu' && "$MAJOR_VERSION" -ge 24 ]] && RESOLVER_PKG=resolvconf || RESOLVER_PKG=openresolv
-    
+
   UNINSTALL_CHECK=("wg-quick" "warp-cli" "wireproxy")
   UNINSTALL_DO=("uninstall_warp" "uninstall_client" "uninstall_wireproxy")
   UNINSTALL_DEPENDENCIES=("wireguard-tools $RESOLVER_PKG " "" " $RESOLVER_PKG ")
@@ -2100,6 +2100,7 @@ AllowedIPs = 0.0.0.0/0
 AllowedIPs = ::/0
 Endpoint = engage.cloudflareclient.com:2408
 EOF
+      chmod 600 /etc/wireguard/warp.conf
 
       cat > /etc/wireguard/NonGlobalUp.sh <<EOF
 sleep 5
@@ -2207,6 +2208,11 @@ EOF
       local WIREGUARD_TOOLS_VERSION=$(wg --version | sed "s#.* v1\.0\.\([0-9]\+\) .*#\1#g")
       [[ "$WIREGUARD_TOOLS_VERSION" < 20210223 ]] && mv /tmp/wireguard-go-20201118 /usr/bin/wireguard-go || mv /tmp/wireguard-go-20230223 /usr/bin/wireguard-go
       rm -f /tmp/wireguard-go-*
+
+      # 为了兼容 Arch 及相关系统，wg-quick 在 set_dns 和 unset_dns 函数中加入 resolvconf -u
+      sed -i '/\[\[ \${#DNS\[@\]} -gt 0 \]\] || return 0/a\        cmd resolvconf -u' /usr/bin/wg-quick
+
+      # 如果用户选择使用 wireguard-go reserved 版本，则修改 wg-quick 文件
       if [ "$KERNEL_ENABLE" = '1' ]; then
         cp -f /usr/bin/wg-quick{,.origin}
         cp -f /usr/bin/wg-quick{,.reserved}

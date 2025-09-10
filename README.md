@@ -22,6 +22,8 @@
 * * *
 
 ## 更新信息
+2025.09.10 menu.sh v3.1.8 增强脚本对 Arch Linux 及 EndeavourOS 系统的兼容性
+
 2025.08.24 menu.sh v3.1.7 1. 适配 Ubuntu 24.04 及以上版本安装 Warp，感谢网友 [Michaol] 提供的解决方案; 2. 适配 Debian 13 安装 Client，感谢用户 [ainp] 的反馈
 
 2025.08.11 menu.sh v3.1.6 / warp-go.sh v1.2.4 删除最优 Endpoint 功能以适应官方调整
@@ -576,11 +578,13 @@ WARP是CloudFlare提供的一项基于WireGuard的网络流量安全及加速服
 * 为仅IPv6服务器添加IPv4
 
 原理如图，IPv4的流量均被WARP网卡接管，实现了让IPv4的流量通过WARP访问外部网络。
+
 <img src="https://user-images.githubusercontent.com/62703343/135735404-1389d022-e5c5-4eb8-9655-f9f065e3c92e.png" width="70%" />
 
 * 为仅IPv4服务器添加IPv6
 
 原理如图，IPv6的流量均被WARP网卡接管，实现了让IPv6的流量通过WARP访问外部网络。
+
 <img src="https://user-images.githubusercontent.com/62703343/135735414-01321b0b-887e-43d6-ad68-a74db20cfe84.png" width="70%" />
 
 * 双栈服务器置换网络
