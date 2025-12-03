@@ -10,7 +10,7 @@ TOKEN_LENGTH=800
 export DEBIAN_FRONTEND=noninteractive
 
 # Github 反代加速代理
-GH_PROXY='https://ghproxy.lvedong.eu.org/'
+GITHUB_PROXY=('https://v6.gh-proxy.org/' 'https://gh-proxy.com/' 'https://hub.glowp.xyz/' 'https://proxy.vvvv.ee/' 'https://ghproxy.lvedong.eu.org/')
 
 trap cleanup_resources EXIT INT TERM
 
@@ -259,7 +259,11 @@ cleanup_resources() {
 
 # 检测是否需要启用 Github CDN，如能直接连通，则不使用
 check_cdn() {
-  [ -n "$GH_PROXY" ] && wget --server-response --quiet --output-document=/dev/null --no-check-certificate --tries=2 --timeout=3 https://raw.githubusercontent.com/fscarmen/warp-sh/main/README.md >/dev/null 2>&1 && unset GH_PROXY
+  if ! wget --server-response --quiet --output-document=/dev/null --no-check-certificate --tries=2 --timeout=3 https://raw.githubusercontent.com/fscarmen/warp-sh/main/README.md >/dev/null 2>&1; then
+    for GH_PROXY in "${GITHUB_PROXY[@]}"; do
+      wget --server-response --quiet --output-document=/dev/null --no-check-certificate --tries=2 --timeout=3 "${GH_PROXY}https://raw.githubusercontent.com/fscarmen/warp-sh/main/README.md" >/dev/null 2>&1 && break || unset GH_PROXY
+    done
+  fi
 }
 
 # 脚本当天及累计运行次数统计
@@ -388,18 +392,30 @@ check_arch() {
 check_dependencies() {
   # 对于 Alpine 和 OpenWrt 系统，升级库并重新安装依赖
   if [[ "$SYSTEM" =~ Alpine|OpenWrt ]]; then
-    DEPS_CHECK=("ping" "curl" "wget" "grep" "bash" "ip" "tar" "virt-what")
-    DEPS_INSTALL=("iputils-ping" "curl" "wget" "grep" "bash" "iproute2" "tar" "virt-what")
+    DEPS_CHECK=("ping" "curl" "wget" "grep" "bash" "ip" "tar" "virt-what" "xxd" "openssl")
+    DEPS_INSTALL=("iputils-ping" "curl" "wget" "grep" "bash" "iproute2" "tar" "virt-what" "xxd" "openssl")
   else
     # 对于三大系统需要的依赖
     [ "${SYSTEM}" = 'CentOS' ] && ${PACKAGE_INSTALL[int]} vim-common
-    DEPS_CHECK=("ping" "wget" "curl" "systemctl" "ip")
-    DEPS_INSTALL=("iputils-ping" "wget" "curl" "systemctl" "iproute2")
+    DEPS_CHECK=("ping" "wget" "curl" "systemctl" "ip" "xxd" "openssl")
+    DEPS_INSTALL=("iputils-ping" "wget" "curl" "systemctl" "iproute2" "xxd" "openssl")
   fi
 
   for c in "${!DEPS_CHECK[@]}"; do
     [ ! $(type -p ${DEPS_CHECK[c]}) ] && [[ ! "${DEPS[@]}" =~ "${DEPS_INSTALL[c]}" ]] && DEPS+=(${DEPS_INSTALL[c]})
   done
+
+  # 检查 JSON 格式化工具
+  if [ -x "$(type -p python3)" ]; then
+    JSON_TOOL="python3 -m json.tool"
+  elif [ -x "$(type -p python)" ]; then
+    JSON_TOOL="python -m json.tool"
+  elif [ -x "$(type -p jq)" ]; then
+    JSON_TOOL="jq"
+  else
+    JSON_TOOL="jq"
+    DEPS+=("jq")
+  fi
 
   if [ "${#DEPS[@]}" -ge 1 ]; then
     info "\n $(text 8) ${DEPS[@]} \n"
@@ -457,7 +473,137 @@ warp_api(){
 
   case "$RUN" in
     register )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=register&team_token=${WARP_TEAM_TOKEN}"
+      # 生成 wireguard 公私钥，并且补上 private key
+      if [[ -x "$(type -p openssl)" && -x "$(type -p xxd)" && -x "$(type -p base64)" ]]; then
+        local KEY_PAIR=$(openssl genpkey -algorithm X25519 | openssl pkey -text -noout)
+        local PRIVATE_KEY=$(echo $KEY_PAIR | sed 's/.*priv:\(.*\)pub.*/\1/; s/ //g' | xxd -r -p | base64)
+        local PUBLIC_KEY=$(echo $KEY_PAIR | sed 's/.*pub://; s/ //g'| xxd -r -p | base64)
+      else
+        local WG_API=$(curl -m5 -sSL https://wg-key.forvps.gq/)
+        local PRIVATE_KEY=$(awk 'NR==2 {print $2}' <<< "$WG_API")
+        local PUBLIC_KEY=$(awk 'NR==1 {print $2}' <<< "$WG_API")
+      fi
+
+      if grep -q '.' <<< "$PRIVATE_KEY" && grep -q '.' <<< "$PUBLIC_KEY"; then
+        local INSTALL_ID=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 22)
+        local FCM_TOKEN="${INSTALL_ID}:APA91b$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 134)"
+
+        # 由于某些 IP 存在被限制注册，所以使用不停的注册来处理，超过一定次数则使用预设账户
+        grep -q '.' <<< "$WARP_TEAM_TOKEN" && local TEAM_HEADER="--header \"Cf-Access-Jwt-Assertion: $(sed 's/.*?token=//' <<< "$WARP_TEAM_TOKEN")\""
+        until grep -q 'account' <<< "$ACCOUNT"; do
+          ((REGISTER_ERROR_TIME++))
+          if [ "$REGISTER_ERROR_TIME" -gt 30 ]; then
+            break
+          elif [ "$REGISTER_ERROR_TIME" -gt 1 ]; then
+            sleep 5
+          fi
+          local ACCOUNT=$(curl --request POST 'https://api.cloudflareclient.com/v0a2158/reg' \
+            --silent \
+            --location \
+            --tlsv1.3 \
+            --header 'User-Agent: okhttp/3.12.1' \
+            --header 'CF-Client-Version: a-6.10-2158' \
+            --header 'Content-Type: application/json' \
+            $TEAM_HEADER \
+            --data '{"key":"'${PUBLIC_KEY}'","install_id":"'${INSTALL_ID}'","fcm_token":"'${FCM_TOKEN}'","tos":"'$(date +"%Y-%m-%dT%H:%M:%S.000Z")'","model":"PC","serial_number":"'${INSTALL_ID}'","locale":"zh_CN"}')
+        done
+
+        if grep -q 'account' <<< "$ACCOUNT"; then
+          local CLIENT_ID=$(sed 's/.*"client_id":"\([^\"]\+\)\".*/\1/' <<<"$ACCOUNT")
+          local RESERVED=$(echo "$CLIENT_ID" | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x${HEX}"; done | awk '{print "["$1", "$2", "$3"]"}')
+
+          $JSON_TOOL <<< "$ACCOUNT" 2>&1 | sed "/\"key\"/a\    \"private_key\": \"$PRIVATE_KEY\"," | sed "/\"client_id\"/a\        \"reserved\": $RESERVED,"
+        else
+          echo '{
+  "id": "b0fe9b24-3396-486e-a12d-c194dbbb7bfb",
+  "type": "a",
+  "model": "PC",
+  "name": "",
+  "key": "rizJSrjeCO51ck8Rmj9YwstFnf6M9rJKZIXFQo3y8j8=",
+  "private_key": "hTk06uwwXhZx3RVqtug3MQ0RSodzdM/U5z/M5NIbh4c=",
+  "account": {
+    "id": "5a43e4b3-2e13-46b9-9437-2abe55cd5f4b",
+    "account_type": "free",
+    "created": "2025-12-02T16:44:10.752518443Z",
+    "updated": "2025-12-02T16:44:10.752518443Z",
+    "premium_data": 0,
+    "quota": 0,
+    "usage": 0,
+    "warp_plus": true,
+    "referral_count": 0,
+    "referral_renewal_countdown": 0,
+    "role": "child",
+    "license": "36L7Pg9E-j6Jp2x04-I40UQ39C",
+    "ttl": "2026-03-02T16:44:10.752514723Z"
+  },
+  "config": {
+    "client_id": "lzaY",
+    "reserved": [
+      151,
+      54,
+      152
+    ],
+    "peers": [
+      {
+        "public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+        "endpoint": {
+          "v4": "162.159.192.5:0",
+          "v6": "[2606:4700:d0::a29f:c005]:0",
+          "host": "engage.cloudflareclient.com:2408",
+          "ports": [
+            2408,
+            500,
+            1701,
+            4500
+          ]
+        }
+      }
+    ],
+    "interface": {
+      "addresses": {
+        "v4": "172.16.0.2",
+        "v6": "2606:4700:110:8921:bf06:c4d7:40b7:8afd"
+      }
+    },
+    "services": {
+      "http_proxy": "172.16.0.1:2480"
+    }
+  },
+  "token": "50d988c2-b5fb-c829-42dd-a33a960ea734",
+  "warp_enabled": false,
+  "waitlist_enabled": false,
+  "created": "2025-12-02T16:44:10.327083841Z",
+  "updated": "2025-12-02T16:44:10.327083841Z",
+  "tos": "2025-12-02T16:44:10.272Z",
+  "place": 0,
+  "locale": "zh-CN",
+  "enabled": true,
+  "install_id": "095iylvdl1trz7ukonr00g",
+  "fcm_token": "095iylvdl1trz7ukonr00g:APA91ba32nwi5zphdi3ercafxodyjr6iwlrrgb919l2gcm4h5irun8y8nsuhbdmc0kufcxhopvonqql4gllld8nsjaavi17hf7yfl5qhdpz03oq4u69ngu0s5hyo6wxiy4luk8xeenf1",
+  "serial_number": "095iylvdl1trz7ukonr00g",
+  "policy": {
+    "always_include": [
+      {
+        "ip": "162.159.197.4"
+      },
+      {
+        "ip": "2606:4700:102::4"
+      }
+    ],
+    "always_exclude": [
+      {
+        "ip": "162.159.197.3"
+      },
+      {
+        "ip": "2606:4700:102::3"
+      }
+    ],
+    "post_quantum": "enabled_with_downgrades",
+    "tunnel_protocol": "masque"
+  }
+}'
+        fi
+      fi
       ;;
     device )
       curl -m5 -sL "https://${WARP_API_URL}/?run=device&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}"
@@ -469,8 +615,17 @@ warp_api(){
       curl -m5 -sL "https://${WARP_API_URL}/?run=license&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}&license=${WARP_LICENSE}"
       ;;
     cancel )
-      # 只保留Teams账户，删除其他账户
-      grep -oqE '"id":[ ]+"t.[A-F0-9a-f]{8}-' $FILE_PATH || curl -m5 -sL "https://${WARP_API_URL}/?run=cancel&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}"
+      # 只保留 Teams 或者预设账户，删除其他账户
+      if ! grep -oqE '"id":[ ]+("(t.[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12})|b0fe9b24-3396-486e-a12d-c194dbbb7bfb")' $FILE_PATH; then
+        curl --request DELETE "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}" \
+            --head \
+            --silent \
+            --location \
+            --header 'User-Agent: okhttp/3.12.1' \
+            --header 'CF-Client-Version: a-6.10-2158' \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer ${WARP_TOKEN}" | awk '/HTTP/{print $(NF-1)}'
+      fi
       ;;
     convert )
       if [ "$WARP_CONVERT_MODE" = decode ]; then
@@ -510,7 +665,7 @@ check_install() {
       # 预下载 warp-go，并添加执行权限，如因 gitlab 接口问题未能获取，默认 v1.0.8
       latest=$(wget -qO- -T2 -t1 https://gitlab.com/api/v4/projects/ProjectWARP%2Fwarp-go/releases | awk -F '"' '{for (i=0; i<NF; i++) if ($i=="tag_name") {print $(i+2); exit}}' | sed "s/v//")
       latest=${latest:-'1.0.8'}
-      wget --no-check-certificate -T5 -qO- /tmp/warp-go.tar.gz https://gitlab.com/fscarmen/warp/-/raw/main/warp-go/warp-go_"$latest"_linux_"$ARCHITECTURE".tar.gz | tar xz -C /tmp/ warp-go
+      wget --no-check-certificate -T5 -qO- https://gitlab.com/fscarmen/warp/-/raw/main/warp-go/warp-go_"$latest"_linux_"$ARCHITECTURE".tar.gz | tar xz -C /tmp/ warp-go
       chmod +x /tmp/warp-go
     }&
   fi
@@ -1194,9 +1349,6 @@ update() {
 # 输出 wireguard 和 sing-box 配置文件
 export_file() {
   if [ -s /opt/warp-go/warp-go ]; then
-    PY=("python3" "python" "python2")
-    for g in "${PY[@]}"; do [ $(type -p $g) ] && PYTHON=$g && break; done
-    [ -z "$PYTHON" ] && PYTHON=python3 && ${PACKAGE_INSTALL[int]} $PYTHON
     [ ! -s /opt/warp-go/warp.conf ] && register_api warp.conf
     /opt/warp-go/warp-go --config=/opt/warp-go/warp.conf --export-wireguard=/opt/warp-go/wgcf.conf >/dev/null 2>&1
     /opt/warp-go/warp-go --config=/opt/warp-go/warp.conf --export-singbox=/opt/warp-go/singbox.json >/dev/null 2>&1
@@ -1209,7 +1361,7 @@ export_file() {
   echo -e "\n\n"
 
   info " $(text 101) "
-  cat /opt/warp-go/singbox.json | $PYTHON -m json.tool
+  cat /opt/warp-go/singbox.json | $JSON_TOOL
   echo -e "\n\n"
 }
 
@@ -1602,7 +1754,7 @@ check_cdn
 select_language
 check_operating_system
 check_arch
-check_dependencies
+[[ "$OPTION" != "u" ]] && check_dependencies
 check_install
 
 # 设置部分后缀 1/3
