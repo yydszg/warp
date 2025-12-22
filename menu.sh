@@ -2576,7 +2576,7 @@ EOF
     echo -e "\n==============================================================\n"
     info " IPv4: $WAN4 $COUNTRY4  $ASNORG4 "
     info " IPv6: $WAN6 $COUNTRY6  $ASNORG6 "
-    # statistics_of_run-times get
+    statistics_of_run-times get
     [ -n "$QUOTA" ] && info " $(text 133) "
     info " $PRIORITY_NOW , $(text 186) "
     echo -e "\n==============================================================\n"
@@ -3420,7 +3420,7 @@ NAME=$3
 # 主程序运行 1/3
 
 check_cdn
-# statistics_of_run-times update menu.sh 2>/dev/null
+statistics_of_run-times update menu.sh 2>/dev/null
 select_language
 check_operating_system
 

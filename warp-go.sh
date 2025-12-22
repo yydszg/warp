@@ -1615,7 +1615,7 @@ EOF
   result_priority
 
   # 获取运行次数
-  # statistics_of_run-times get
+  statistics_of_run-times get
 
   echo -e "\n==============================================================\n"
   info " IPv4: $WAN4 $COUNTRY4  $ASNORG4 "
@@ -1750,7 +1750,7 @@ NAME="$3"
 
 # 主程序运行 1/3
 check_cdn
-# statistics_of_run-times update warp-go.sh 2>/dev/null
+statistics_of_run-times update warp-go.sh 2>/dev/null
 select_language
 check_operating_system
 check_arch
