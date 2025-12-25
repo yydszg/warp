@@ -606,13 +606,36 @@ warp_api(){
       fi
       ;;
     device )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=device&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}"
+      curl --request GET "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}" \
+        --silent \
+        --location \
+        --header 'User-Agent: okhttp/3.12.1' \
+        --header 'CF-Client-Version: a-6.10-2158' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${WARP_TOKEN}" |
+        $JSON_TOOL | sed "/\"warp_enabled\"/i\    \"token\": \"${WARP_TOKEN}\","
       ;;
     name )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=name&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}&device_name=${WARP_DEVICE_NAME}"
+      curl --request PATCH "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}" \
+        --silent \
+        --location \
+        --header 'User-Agent: okhttp/3.12.1' \
+        --header 'CF-Client-Version: a-6.10-2158' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${WARP_TOKEN}" \
+        --data '{"name":"'"$WARP_DEVICE_NAME"'"}' |
+        $JSON_TOOL
       ;;
     license )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=license&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}&license=${WARP_LICENSE}"
+      curl --request PUT "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}/account" \
+        --silent \
+        --location \
+        --header 'User-Agent: okhttp/3.12.1' \
+        --header 'CF-Client-Version: a-6.10-2158' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${WARP_TOKEN}" \
+        --data '{"license": "'"$WARP_LICENSE"'"}' |
+        $JSON_TOOL
       ;;
     cancel )
       # 只保留 Teams 或者预设账户，删除其他账户
@@ -629,15 +652,17 @@ warp_api(){
       ;;
     convert )
       if [ "$WARP_CONVERT_MODE" = decode ]; then
-        curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT}" | grep -A4 'reserved' | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
+        # 解码 client_id 为 reserved
+        echo "$WARP_CONVERT" | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x${HEX}"; done | awk '{print "["$1","$2","$3"]"}'
       elif [ "$WARP_CONVERT_MODE" = encode ]; then
-        curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT//[ \[\]]}" | awk -F '"' '/client_id/{print $(NF-1)}'
+        # 编码 reserved 为 client_id
+        printf '%02x' ${WARP_CONVERT//[,\[\]]} | xxd -r -p | base64
       elif [ "$WARP_CONVERT_MODE" = file ]; then
         if grep -sq '"reserved"' $FILE_PATH; then
-          grep -A4 'reserved' $FILE_PATH | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
+          grep 'reserved' $FILE_PATH | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
         else
           local WARP_CONVERT=$(awk -F '"' '/"client_id"/{print $(NF-1)}' $FILE_PATH)
-          curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT}" | grep -A4 'reserved' | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
+          echo "$WARP_CONVERT" | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x${HEX}"; done | awk '{print "["$1","$2","$3"]"}'
         fi
       fi
       ;;
@@ -768,19 +793,6 @@ need_install() {
 # 更换支持 Netflix WARP IP 改编自 [luoxue-bot] 的成熟作品，地址[https://github.com/luoxue-bot/warp_auto_change_ip]
 change_ip() {
   need_install
-  warp_restart() {
-    warning " $(text_eval 13) "
-    cp -f /opt/warp-go/warp.conf{,.tmp1}
-    [ -s /opt/warp-go/License ] && k='+' || k=' free'
-    register_api warp.conf.tmp2
-    sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
-    tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
-    mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
-    warp_api "cancel" "/opt/warp-go/warp.conf.tmp1" >/dev/null 2>&1
-    rm -f /opt/warp-go/warp.conf.tmp*
-    ${SYSTEMCTL_RESTART[int]}
-    sleep $l
-  }
 
   # 检测账户类型为 Team 的不能更换
   if grep -qE 'Type[ ]+=[ ]+team' /opt/warp-go/warp.conf; then
@@ -798,15 +810,6 @@ change_ip() {
   # 设置时区，让时间戳时间准确，显示脚本运行时长，中文为 GMT+8，英文为 UTC; 设置 UA
   ip_start=$(date +%s)
   echo "$SYSTEM" | grep -qE "Alpine" && ( [ "$L" = C ] && timedatectl set-timezone Asia/Shanghai || timedatectl set-timezone UTC )
-  UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
-
-  # 根据 lmc999 脚本检测 Netflix Title，如获取不到，使用兜底默认值
-  local LMC999=($(curl -sSLm4 ${GH_PROXY}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh | sed -n 's#.*/title/\([0-9]\+\).*#\1#gp'))
-  RESULT_TITLE=(${LMC999[*]:0:2})
-  REGION_TITLE=${LMC999[2]}
-  [[ ! "${RESULT_TITLE[0]}" =~ ^[0-9]+$ ]] && RESULT_TITLE[0]='81280792'
-  [[ ! "${RESULT_TITLE[1]}" =~ ^[0-9]+$ ]] && RESULT_TITLE[1]='70143836'
-  [[ ! "$REGION_TITLE" =~ ^[0-9]+$ ]] && REGION_TITLE=${RESULT_TITLE[1]}
 
   # 检测 WARP 单双栈服务
   unset T4 T6
@@ -828,9 +831,9 @@ change_ip() {
       NF='4' && [ "$NETFLIX" = 2 ] && NF='6'
   esac
 
-  # 输入解锁区域
+  # 更换 Netflix IP 时确认期望区域
   if [ -z "$EXPECT" ]; then
-    [ -n "$NF" ] && REGION=$(tr 'a-z' 'A-Z' <<< "$(curl --user-agent "${UA_Browser}" --interface WARP -$NF -fs --max-time 10 --write-out %{redirect_url} --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')")
+    [ -n "$NF" ] && REGION=$(curl --user-agent "${UA_Browser}" -$NF $GLOBAL -fs --max-time 10 http://www.cloudflare.com/cdn-cgi/trace | awk -F '=' '/^loc/{print $NF}')
     REGION=${REGION:-'US'}
     reading " $(text_eval 15) " EXPECT
     until [[ -z "$EXPECT" || "$EXPECT" = [Yy] || "$EXPECT" =~ ^[A-Za-z]{2}$ ]]; do
@@ -838,6 +841,14 @@ change_ip() {
     done
     [[ -z "$EXPECT" || "$EXPECT" = [Yy] ]] && EXPECT="$REGION"
   fi
+
+  # 定义测试的两个 URL
+  # 81280792 通常是全球自制剧 (Netflix Original)
+  # 70143836 通常是非全球授权剧 (如 Breaking Bad)，用于检测是否全解锁
+  local URL_ORIGINAL="https://www.netflix.com/title/81280792"
+  local URL_REGIONAL="https://www.netflix.com/title/70143836"
+  local UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
+  local ARGS="--interface WARP -$NF"
 
   # 解锁检测程序。 i=尝试次数; b=当前账户注册次数; j=注册账户失败的最大次数; l=账户注册失败后等待重试时间;
   i=0; j=10; l=8
@@ -849,17 +860,61 @@ change_ip() {
     WAN=$(eval echo \$WAN$NF) && ASNORG=$(eval echo \$ASNORG$NF)
     COUNTRY=$(eval echo \$COUNTRY$NF)
     unset RESULT REGION
-    for p in ${!RESULT_TITLE[@]}; do
-      RESULT[p]=$(curl --user-agent "${UA_Browser}" --interface WARP -$NF -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/${RESULT_TITLE[p]}")
-      [ "${RESULT[p]}" = 200 ] && break
-    done
+    RESULT=$({
+      curl $ARGS --user-agent "${UA_Browser}" --include -SsL --max-time 10 --tlsv1.3 "$URL_ORIGINAL";
+      curl $ARGS --user-agent "${UA_Browser}" --include -SsL --max-time 10 --tlsv1.3 "$URL_REGIONAL";
+    } 2>&1 | awk '
+      # NR==1 表示处理第一行数据，设置 u 为 1 表示开始处理第一个 URL 的结果
+      NR==1 { u=1 }
 
-    if [[ "${RESULT[@]}" =~ 200 ]]; then
-      REGION=$(tr 'a-z' 'A-Z' <<< "$(curl --user-agent "${UA_Browser}" --interface WARP -$NF -fs --max-time 10 --write-out %{redirect_url} --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')")
-      REGION=${REGION:-'US'}
-      echo "$REGION" | grep -qi "$EXPECT" && info " $(text_eval 16) " && rm -f /opt/warp-go/warp.conf.tmp1 && i=0 && sleep 1h || warp_restart
+      # 如果检测到 HTTP/2 200 且 c 尚未设置，说明第一个测试页面连接成功
+      /HTTP\/2 200/ && u && !c { c=1 }
+
+      # 如果页面源码中包含 og:video 标签，说明可以播放该视频 (v=1 代表全解锁)
+      /og:video/ { v=1 }
+
+      # 匹配页面源码中的 "requestCountry" 字段，提取区域 ID (如 HK, US, TW)
+      {
+        if (u && !r && match($0, /"requestCountry":\{"supportedLocales":\[[^]]+\],"id":"[^"]+"/)) {
+          s = substr($0, RSTART, RLENGTH);
+          sub(/.*"id":"*/, "", s);
+          sub(/".*/, "", s);
+          r = s
+        }
+      }
+
+      # 打印最终的 JSON 结果
+      END {
+        print "{";
+        print "  \"connect\": " (c ? "true" : "false") ",";
+        if (c) {
+          print "  \"Netflix\": \"" (v ? "Yes" : "Originals Only") "\",";
+          print "  \"region\": \"" r "\""
+        };
+        print "}"
+      }
+    ')
+
+    local REGION=$(awk -F '"' '/region/{print $4}' <<< "${RESULT}")
+    REGION=${REGION:-'US'}
+
+    if grep -q '"Yes"' <<< "${RESULT}" && grep -qi "$EXPECT" <<< "$REGION"; then
+      info " $(text_eval 16) "
+      rm -f /opt/warp-go/warp.conf.tmp1
+      i=0
+      sleep 1h
     else
-      warp_restart
+      warning " $(text_eval 13) "
+      cp -f /opt/warp-go/warp.conf{,.tmp1}
+      [ -s /opt/warp-go/License ] && k='+' || k=' free'
+      register_api warp.conf.tmp2
+      sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
+      tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
+      mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
+      warp_api "cancel" "/opt/warp-go/warp.conf.tmp1" >/dev/null 2>&1
+      rm -f /opt/warp-go/warp.conf.tmp*
+      ${SYSTEMCTL_RESTART[int]}
+      sleep $l
     fi
   done
 }

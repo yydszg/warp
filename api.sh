@@ -157,7 +157,7 @@ account_binding_devices() {
 change_device_name() {
   [[ -z "$ID" && -z "$TOKEN" ]] && fetch_account_information
 
-  curl --request PATCH "https://api.cloudflareclient.com/v0a2158/reg/${ID}/account/reg/${ID}" \
+  curl --request PATCH "https://api.cloudflareclient.com/v0a2158/reg/${ID}" \
     --silent \
     --location \
     --header 'User-Agent: okhttp/3.12.1' \

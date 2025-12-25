@@ -259,8 +259,8 @@ E[122]="Port change to \$PORT succeeded."
 C[122]="端口成功更换至 \$PORT"
 E[123]="Change the WARP IP to support Netflix (warp i)"
 C[123]="更换支持 Netflix 的 IP (warp i)"
-E[124]="1. Brush WARP IPv4 (default)\n 2. Brush WARP IPv6"
-C[124]="1. 刷 WARP IPv4 (默认)\n 2. 刷 WARP IPv6"
+E[124]="1. Brush WARP IPv4\n 2. Brush WARP IPv6 (default)"
+C[124]="1. 刷 WARP IPv4\n 2. 刷 WARP IPv6 (默认)"
 E[125]="\$(date +'%F %T') Region: \$REGION Done. IPv\$NF: \$WAN  \$COUNTRY  \$ASNORG. Retest after 1 hour. Brush ip runing time:\$DAY days \$HOUR hours \$MIN minutes \$SEC seconds"
 C[125]="\$(date +'%F %T') 区域 \$REGION 解锁成功，IPv\$NF: \$WAN  \$COUNTRY  \$ASNORG，1 小时后重新测试，刷 IP 运行时长: \$DAY 天 \$HOUR 时 \$MIN 分 \$SEC 秒"
 E[126]="\$(date +'%F %T') Try \${i}. Failed. IPv\$NF: \$WAN  \$COUNTRY  \$ASNORG. Retry after \${j} seconds. Brush ip runing time:\$DAY days \$HOUR hours \$MIN minutes \$SEC seconds"
@@ -740,13 +740,36 @@ warp_api(){
       fi
       ;;
     device )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=device&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}"
+      curl --request GET "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}" \
+        --silent \
+        --location \
+        --header 'User-Agent: okhttp/3.12.1' \
+        --header 'CF-Client-Version: a-6.10-2158' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${WARP_TOKEN}" |
+        $JSON_TOOL | sed "/\"warp_enabled\"/i\    \"token\": \"${WARP_TOKEN}\","
       ;;
     name )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=name&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}&device_name=${WARP_DEVICE_NAME}"
+      curl --request PATCH "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}" \
+        --silent \
+        --location \
+        --header 'User-Agent: okhttp/3.12.1' \
+        --header 'CF-Client-Version: a-6.10-2158' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${WARP_TOKEN}" \
+        --data '{"name":"'"$WARP_DEVICE_NAME"'"}' |
+        $JSON_TOOL
       ;;
     license )
-      curl -m5 -sL "https://${WARP_API_URL}/?run=license&device_id=${WARP_DEVICE_ID}&token=${WARP_TOKEN}&license=${WARP_LICENSE}"
+      curl --request PUT "https://api.cloudflareclient.com/v0a2158/reg/${WARP_DEVICE_ID}/account" \
+        --silent \
+        --location \
+        --header 'User-Agent: okhttp/3.12.1' \
+        --header 'CF-Client-Version: a-6.10-2158' \
+        --header 'Content-Type: application/json' \
+        --header "Authorization: Bearer ${WARP_TOKEN}" \
+        --data '{"license": "'"$WARP_LICENSE"'"}' |
+        $JSON_TOOL
       ;;
     cancel )
       # 只保留 Teams 或者预设账户，删除其他账户
@@ -763,15 +786,17 @@ warp_api(){
       ;;
     convert )
       if [ "$WARP_CONVERT_MODE" = decode ]; then
-        curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT}" | grep -A4 'reserved' | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
+        # 解码 client_id 为 reserved
+        echo "$WARP_CONVERT" | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x${HEX}"; done | awk '{print "["$1","$2","$3"]"}'
       elif [ "$WARP_CONVERT_MODE" = encode ]; then
-        curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT//[ \[\]]}" | awk -F '"' '/client_id/{print $(NF-1)}'
+        # 编码 reserved 为 client_id
+        printf '%02x' ${WARP_CONVERT//[,\[\]]} | xxd -r -p | base64
       elif [ "$WARP_CONVERT_MODE" = file ]; then
         if grep -sq '"reserved"' $FILE_PATH; then
-          grep -A4 'reserved' $FILE_PATH | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
+          grep 'reserved' $FILE_PATH | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
         else
           local WARP_CONVERT=$(awk -F '"' '/"client_id"/{print $(NF-1)}' $FILE_PATH)
-          curl -m5 -sL "https://${WARP_API_URL}/?run=id&convert=${WARP_CONVERT}" | grep -A4 'reserved' | sed 's/.*\(\[.*\)/\1/g; s/],/]/' | tr -d '[:space:]'
+          echo "$WARP_CONVERT" | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x${HEX}"; done | awk '{print "["$1","$2","$3"]"}'
         fi
       fi
       ;;
@@ -1020,10 +1045,15 @@ result_priority() {
 
 # 更换 Netflix IP 时确认期望区域
 input_region() {
-  [ -n "$NF" ] && REGION=$(curl --user-agent "${UA_Browser}" -$NF $GLOBAL -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-  [ -n "$WIREPROXY_PORT" ] && REGION=$(curl --user-agent "${UA_Browser}" -sx socks5h://127.0.0.1:$WIREPROXY_PORT -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-  [ -n "$INTERFACE" ] && REGION=$(curl --user-agent "${UA_Browser}" $INTERFACE -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-  REGION=${REGION:-'US'}
+  if [ -n "$NF" ]; then
+    REGION=$(curl --user-agent "${UA_Browser}" -$NF $GLOBAL -fs --max-time 10 http://www.cloudflare.com/cdn-cgi/trace | awk -F '=' '/^loc/{print $NF}')
+  elif [ -n "$WIREPROXY_PORT" ]; then
+    REGION=$(curl --user-agent "${UA_Browser}" --proxy socks5h://127.0.0.1:$WIREPROXY_PORT -fs --max-time 10 http://www.cloudflare.com/cdn-cgi/trace | awk -F '=' '/^loc/{print $NF}')
+  elif [ -n "$INTERFACE" ]; then
+    REGION=$(curl --user-agent "${UA_Browser}" $INTERFACE -fs --max-time 10 http://www.cloudflare.com/cdn-cgi/trace | awk -F '=' '/^loc/{print $NF}')
+  else
+    REGION='US'
+  fi
   reading " $(text 56) " EXPECT
   until [[ -z "$EXPECT" || "${EXPECT,,}" = 'y' || "${EXPECT,,}" =~ ^[a-z]{2}$ ]]; do
     reading " $(text 56) " EXPECT
@@ -1033,9 +1063,48 @@ input_region() {
 
 # 更换支持 Netflix WARP IP 改编自 [luoxue-bot] 的成熟作品，地址[https://github.com/luoxue-bot/warp_auto_change_ip]
 change_ip() {
+  check_unlock() {
+    ARGS=$1;
+
+    {
+      curl $ARGS --user-agent "${UA_Browser}" --include -SsL --max-time 10 --tlsv1.3 "$URL_ORIGINAL";
+      curl $ARGS --user-agent "${UA_Browser}" --include -SsL --max-time 10 --tlsv1.3 "$URL_REGIONAL";
+    } 2>&1 | awk '
+      # NR==1 表示处理第一行数据，设置 u 为 1 表示开始处理第一个 URL 的结果
+      NR==1 { u=1 }
+
+      # 如果检测到 HTTP/2 200 且 c 尚未设置，说明第一个测试页面连接成功
+      /HTTP\/2 200/ && u && !c { c=1 }
+
+      # 如果页面源码中包含 og:video 标签，说明可以播放该视频 (v=1 代表全解锁)
+      /og:video/ { v=1 }
+
+      # 匹配页面源码中的 "requestCountry" 字段，提取区域 ID (如 HK, US, TW)
+      {
+        if (u && !r && match($0, /"requestCountry":\{"supportedLocales":\[[^]]+\],"id":"[^"]+"/)) {
+          s = substr($0, RSTART, RLENGTH);
+          sub(/.*"id":"*/, "", s);
+          sub(/".*/, "", s);
+          r = s
+        }
+      }
+
+      # 打印最终的 JSON 结果
+      END {
+        print "{";
+        print "  \"connect\": " (c ? "true" : "false") ",";
+        if (c) {
+          print "  \"Netflix\": \"" (v ? "Yes" : "Originals Only") "\",";
+          print "  \"region\": \"" r "\""
+        };
+        print "}"
+      }
+    '
+  }
+
   change_stack() {
     hint "\n $(text 124) \n" && reading " $(text 50) " NETFLIX
-    NF='4' && [ "$NETFLIX" = 2 ] && NF='6'
+   [ "$NETFLIX" = 1 ] && { NF='4'; SOCKS5_NF='-4'; } || { NF='6'; SOCKS5_NF=''; }
   }
 
   change_warp() {
@@ -1102,17 +1171,11 @@ change_ip() {
       [ "$GLOBAL" = '--interface warp' ] && ip_case "$NF" warp non-global || ip_case "$NF" warp
       WAN=$(eval echo \$WAN$NF) && COUNTRY=$(eval echo \$COUNTRY$NF) && ASNORG=$(eval echo \$ASNORG$NF)
       unset RESULT REGION
-      for l in ${!RESULT_TITLE[@]}; do
-        RESULT[l]=$(curl --user-agent "${UA_Browser}" -$NF $GLOBAL -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/${RESULT_TITLE[l]}")
-        [ "${RESULT[l]}" = 200 ] && break
-      done
-      if [[ "${RESULT[@]}" =~ 200 ]]; then
-        REGION=$(curl --user-agent "${UA_Browser}" -"$NF" $GLOBAL -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-        REGION=${REGION:-'US'}
-        grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || warp_restart
-      else
-        warp_restart
-      fi
+      local RESULT=$(check_unlock "-$NF $GLOBAL")
+      local REGION=$(awk -F '"' '/region/{print $4}' <<< "${RESULT}")
+      REGION=${REGION:-'US'}
+
+      grep -q '"Yes"' <<< "${RESULT}" && grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || warp_restart
     done
   }
 
@@ -1129,7 +1192,7 @@ change_ip() {
           rule_add >/dev/null 2>&1
           ;;
         WarpProxy )
-          warning " $(text 126) " && warp-cli --accept-tos registration delete >/dev/null 2>&1
+          warning " $(text 126) "
           warp-cli --accept-tos registration delete >/dev/null 2>&1
           warp-cli --accept-tos registration new >/dev/null 2>&1
           [ -s /etc/wireguard/license ] && warp-cli --accept-tos registration license $(cat /etc/wireguard/license) >/dev/null 2>&1
@@ -1148,17 +1211,11 @@ change_ip() {
         ip_case "$NF" client
         WAN=$(eval echo "\$CLIENT_WAN$NF") && ASNORG=$(eval echo "\$CLIENT_ASNORG$NF") && COUNTRY=$(eval echo "\$CLIENT_COUNTRY$NF")
         unset RESULT REGION
-        for l in ${!RESULT_TITLE[@]}; do
-          RESULT[l]=$(curl --user-agent "${UA_Browser}" -"$NF" -sx socks5h://127.0.0.1:$CLIENT_PORT -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/${RESULT_TITLE[l]}")
-          [ "${RESULT[l]}" = 200 ] && break
-        done
-        if [[ "${RESULT[@]}" =~ 200 ]]; then
-          REGION=$(curl --user-agent "${UA_Browser}" -"$NF" -sx socks5h://127.0.0.1:$CLIENT_PORT -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-          REGION=${REGION:-'US'}
-          grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || client_restart
-        else
-          client_restart
-        fi
+        local RESULT=$(check_unlock "$SOCKS5_NF -sx socks5h://127.0.0.1:$CLIENT_PORT")
+        local REGION=$(awk -F '"' '/region/{print $4}' <<< "${RESULT}")
+        REGION=${REGION:-'US'}
+
+        grep -q '"Yes"' <<< "${RESULT}" && grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || client_restart
       done
 
     else
@@ -1170,18 +1227,11 @@ change_ip() {
         ip_case "$NF" is_luban
         WAN=$(eval echo "\$CFWARP_WAN$NF") && COUNTRY=$(eval echo "\$CFWARP_COUNTRY$NF") && ASNORG=$(eval echo "\$CFWARP_ASNORG$NF")
         unset RESULT REGION
-        for l in ${!RESULT_TITLE[@]}; do
-          RESULT[l]=$(curl --user-agent "${UA_Browser}" $INTERFACE -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/${RESULT_TITLE[l]}")
-          [ "${RESULT[l]}" = 200 ] && break
-        done
-        [ "${RESULT[0]}" != 200 ] && RESULT[1]=$(curl --user-agent "${UA_Browser}" $INTERFACE -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/${RESULT_TITLE[1]}" 2>&1)
-        if [[ "${RESULT[@]}" =~ 200 ]]; then
-          REGION=$(curl --user-agent "${UA_Browser}" $INTERFACE -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-          REGION=${REGION:-'US'}
-          grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || client_restart
-        else
-          client_restart
-        fi
+        local RESULT=$(check_unlock "$INTERFACE -sx socks5h://127.0.0.1:$CLIENT_PORT")
+        local REGION=$(awk -F '"' '/region/{print $4}' <<< "${RESULT}")
+        REGION=${REGION:-'US'}
+
+        grep -q '"Yes"' <<< "${RESULT}" && grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || client_restart
       done
     fi
   }
@@ -1199,32 +1249,25 @@ change_ip() {
       ip_case "$NF" wireproxy
       WAN=$(eval echo "\$WIREPROXY_WAN$NF") && ASNORG=$(eval echo "\$WIREPROXY_ASNORG$NF") && COUNTRY=$(eval echo "\$WIREPROXY_COUNTRY$NF")
       unset RESULT REGION
-      for l in ${!RESULT_TITLE[@]}; do
-        RESULT[l]=$(curl --user-agent "${UA_Browser}" -"$NF" -sx socks5h://127.0.0.1:$WIREPROXY_PORT -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/${RESULT_TITLE[l]}")
-        [ "${RESULT[l]}" = 200 ] && break
-      done
-      if [[ "${RESULT[@]}" =~ 200 ]]; then
-        REGION=$(curl --user-agent "${UA_Browser}" -"$NF" -sx socks5h://127.0.0.1:$WIREPROXY_PORT -fs --max-time 10 --write-out "%{redirect_url}" --output /dev/null "https://www.netflix.com/title/$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g')
-        REGION=${REGION:-'US'}
-        grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || wireproxy_restart
-      else
-        wireproxy_restart
-      fi
+      local RESULT=$(check_unlock "$SOCKS5_NF -sx socks5h://127.0.0.1:$WIREPROXY_PORT")
+      local REGION=$(awk -F '"' '/region/{print $4}' <<< "${RESULT}")
+      REGION=${REGION:-'US'}
+
+      grep -q '"Yes"' <<< "${RESULT}" && grep -qi "$EXPECT" <<< "$REGION" && info " $(text 125) " && i=0 && sleep 1h || wireproxy_restart
     done
   }
 
   # 设置时区，让时间戳时间准确，显示脚本运行时长，中文为 GMT+8，英文为 UTC; 设置 UA
   ip_start=$(date +%s)
   [ "$SYSTEM" != Alpine ] && ( [ "$L" = C ] && timedatectl set-timezone Asia/Shanghai || timedatectl set-timezone UTC )
-  UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
 
-  # 根据 lmc999 脚本检测 Netflix Title，如获取不到，使用兜底默认值
-  local LMC999=($(curl -sSLm4 ${GH_PROXY}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh | sed -n 's#.*/title/\([0-9]\+\).*#\1#gp'))
-  RESULT_TITLE=(${LMC999[*]:0:2})
-  REGION_TITLE=${LMC999[2]}
-  [[ ! "${RESULT_TITLE[0]}" =~ ^[0-9]+$ ]] && RESULT_TITLE[0]='81280792'
-  [[ ! "${RESULT_TITLE[1]}" =~ ^[0-9]+$ ]] && RESULT_TITLE[1]='70143836'
-  [[ ! "$REGION_TITLE" =~ ^[0-9]+$ ]] && REGION_TITLE=${RESULT_TITLE[1]}
+  # 定义测试的两个 URL
+  # 81280792 通常是全球自制剧 (Netflix Original)
+  # 70143836 通常是非全球授权剧 (如 Breaking Bad)，用于检测是否全解锁
+  local URL_ORIGINAL="https://www.netflix.com/title/81280792"
+  local URL_REGIONAL="https://www.netflix.com/title/70143836"
+  local UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
+
 
   # 根据 WARP interface 、 Client 和 Wireproxy 的安装情况判断刷 IP 的方式
   INSTALL_CHECK=("wg-quick" "warp-cli" "wireproxy")
@@ -2708,7 +2751,7 @@ client_install() {
     if grep -q "CentOS\|Fedora" <<< "$SYSTEM"; then
       curl -fsSl https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo | tee /etc/yum.repos.d/cloudflare-warp.repo
     else
-      local VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/{print $2}' /etc/os-release | sed 's/trixie/bookworm/')
+      local VERSION_CODENAME=$(awk -F '=' '/VERSION_CODENAME/{print $2}' /etc/os-release)
       [ -x "$(type -p gpg)" ] || ${PACKAGE_INSTALL[int]} gnupg 2>/dev/null
       curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
       echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $VERSION_CODENAME main" | tee /etc/apt/sources.list.d/cloudflare-client.list
