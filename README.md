@@ -220,12 +220,17 @@
 
 首次运行
 ```
-wget -N https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh && bash menu.sh [option] [lisence/url/token]
+wget -N https://raw.githubusercontent.com/yydszg/warp/main/menu.sh && bash menu.sh
 ```
 再次运行
 ```
 warp [option] [lisence]
 ```
+如果你在国内网络不稳定，可以加 ghproxy：
+```
+wget -N https://ghproxy.com/https://raw.githubusercontent.com/yydszg/warp/main/menu.sh && bash menu.sh
+```
+
   | [option] 变量1 变量2 | 具体动作说明 |
   | ----------------- | --------------- |
   | h | 帮助 |
