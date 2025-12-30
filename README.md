@@ -226,9 +226,9 @@ wget -N https://raw.githubusercontent.com/yydszg/warp/main/menu.sh && bash menu.
 ```
 warp [option] [lisence]
 ```
-如果你在国内网络不稳定，可以加 ghproxy：
+如果你在国内网络不稳定，可以加 jsdelivr：
 ```
-wget -N https://ghproxy.com/https://raw.githubusercontent.com/yydszg/warp/main/menu.sh && bash menu.sh
+wget -N https://cdn.jsdelivr.net/gh/yydszg/warp@main/menu.sh -O menu.sh && bash menu.sh
 ```
 
   | [option] 变量1 变量2 | 具体动作说明 |
